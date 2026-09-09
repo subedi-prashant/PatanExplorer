@@ -1,0 +1,15 @@
+{
+  "status": "provisional",
+  "name": "Krishna Mandir",
+  "latitude": 27.6736,
+  "longitude": 85.32492,
+  "sourceCrs": "EPSG:4326",
+  "projectedCrs": "EPSG:32645",
+  "unityAxis": {
+    "east": "+X",
+    "elevation": "+Y",
+    "north": "+Z"
+  },
+  "unityUnitsPerMeter": 1.0,
+  "note": "Replace coordinates and status with licensed survey control before claiming survey accuracy."
+}
