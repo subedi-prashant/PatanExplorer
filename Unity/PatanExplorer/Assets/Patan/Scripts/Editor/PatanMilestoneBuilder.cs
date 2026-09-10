@@ -92,6 +92,12 @@ namespace PatanExplorer.Editor
             BuildWebScene(SCENE_PATH, "WebGreybox");
         }
 
+        public static void BuildCurrentSceneWebRelease()
+        {
+            ConfigureProject();
+            BuildWebScene(SCENE_PATH, "WebGreybox");
+        }
+
         private static void BuildWebScene(string scenePath, string outputDirectoryName)
         {
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.WebGL)
