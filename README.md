@@ -72,6 +72,54 @@ PatanExplorer/Unity/PatanExplorer
 
 It is the inner directory containing `Assets`, `Packages`, and `ProjectSettings`.
 
+## One-click Windows launcher
+
+The easiest way to run the game on Windows is to double-click this file in the repository root:
+
+```text
+Run-PatanExplorer.cmd
+```
+
+The launcher performs the following workflow:
+
+1. Verifies the Unity project and local server script.
+2. Uses the existing complete WebGL build when one is available.
+3. Builds and validates the public milestone automatically when no WebGL build exists.
+4. Detects whether Patan Explorer is already running on the selected port.
+5. Starts the Brotli-aware Python server when required.
+6. Opens `http://127.0.0.1:8080` in the default browser.
+7. Keeps the server running until Enter is pressed in the launcher window.
+
+If the launcher encounters an error, its window stays open and displays the missing dependency, occupied port, Unity lock, build log, or Git LFS action needed to fix it.
+
+The equivalent PowerShell command is:
+
+```powershell
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\Deployment\Run-PatanExplorer.ps1
+```
+
+The default workflow does not rebuild when a complete local build already exists. Force a fresh WebGL build of the current scene, validation, server start, and browser launch after changing Unity content with:
+
+```powershell
+.\Run-PatanExplorer.cmd -Rebuild
+```
+
+or:
+
+```powershell
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\Deployment\Run-PatanExplorer.ps1 -Rebuild
+```
+
+The launcher builds the current saved scene without regenerating or overwriting it. Stop an existing Patan Explorer server before forcing a rebuild. To intentionally recreate the deterministic scene, use **Patan > Create Public Milestone** in Unity after committing, stashing, or backing up manual scene edits.
+
+Use another port when `8080` is unavailable:
+
+```powershell
+.\Run-PatanExplorer.cmd -Port 8081
+```
+
+The reusable workflow implementation is in `Deployment/Run-PatanExplorer.ps1`. The `.cmd` file only provides reliable double-click behavior when Windows does not execute `.ps1` files directly.
+
 ## Run in Unity Hub and the Unity Editor
 
 ### 1. Install the pinned Editor

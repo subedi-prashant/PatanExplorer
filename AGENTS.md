@@ -17,12 +17,12 @@ Krishna Mandir and major site layout may be called survey-derived only after wri
 
 ## Build and verify
 
-Run the Editor menu commands under `Patan`, or invoke:
+Double-click `Run-PatanExplorer.cmd` for the normal one-click workflow. Automated rebuilds must use `BuildCurrentSceneWebRelease`, which builds the saved scene without regenerating it. `BuildWebRelease` and `Patan/Create Public Milestone` overwrite `PatanSquare.unity` and must only be used when scene regeneration is explicitly intended.
 
 ```powershell
 $unityEditor = "$HOME\Unity\Hub\Editor\6000.3.23f1\Editor\Unity.exe"
 $projectPath = "$PWD\Unity\PatanExplorer"
-$buildArguments = @('-batchmode', '-quit', '-projectPath', $projectPath, '-buildTarget', 'WebGL', '-executeMethod', 'PatanExplorer.Editor.PatanMilestoneBuilder.BuildWebRelease', '-logFile', "$PWD\Builds\WebGreybox-build.log")
+$buildArguments = @('-batchmode', '-quit', '-projectPath', $projectPath, '-buildTarget', 'WebGL', '-executeMethod', 'PatanExplorer.Editor.PatanMilestoneBuilder.BuildCurrentSceneWebRelease', '-logFile', "$PWD\Builds\WebGreybox-build.log")
 Start-Process -FilePath $unityEditor -ArgumentList $buildArguments -Wait
 $validationArguments = @('-batchmode', '-quit', '-projectPath', $projectPath, '-buildTarget', 'WebGL', '-executeMethod', 'PatanExplorer.Editor.PatanMilestoneValidator.ValidateMilestone', '-logFile', "$PWD\Builds\GreyboxValidation.log")
 Start-Process -FilePath $unityEditor -ArgumentList $validationArguments -Wait
