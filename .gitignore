@@ -40,3 +40,5 @@ Thumbs.db
 sysinfo.txt
 /.devin
 /.playwright-mcp
+# Local Netlify folder
+.netlify

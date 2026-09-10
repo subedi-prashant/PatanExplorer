@@ -314,6 +314,18 @@ Expected headers:
 
 Also verify that the loading screen reaches 100%, the detailed Krishna Mandir renders, the browser console has no application errors, cursor capture works, and the player cannot pass through the temple collision.
 
+## Deploy to Netlify
+
+Netlify hosting is configured through [Deployment/Netlify/_headers](Deployment/Netlify/_headers), which sets the `Content-Encoding` and `Content-Type` headers the Brotli-compressed WebGL build needs. Netlify cannot run the Unity build itself, so build locally first, then upload the finished `Builds/WebGreybox` directory.
+
+1. Install the Netlify CLI once: `npm install -g netlify-cli`.
+2. Sign in once: `netlify login`.
+3. Link this repository to a Netlify site once: `netlify sites:create --name <site-name> --manual` (or `netlify link` for an existing site).
+4. Build the current scene: `.\Run-PatanExplorer.cmd -Rebuild`.
+5. Deploy: `.\Deployment\Deploy-Netlify.ps1` for a draft preview, or `.\Deployment\Deploy-Netlify.ps1 -Prod` to publish to the production URL.
+
+The script copies `_headers` into `Builds/WebGreybox` before calling `netlify deploy`, so the Brotli headers are always current. Draft deploys require a Netlify login to view; only a `-Prod` deploy is reachable at the site's public URL.
+
 ## Troubleshooting
 
 ### Unity reports that the project is already open
