@@ -41,3 +41,20 @@ Test environment: Windows 11, Intel Iris Xe Graphics, 32 GB system memory, headl
 | Application console errors | 0 |
 
 The six repeated `getInternalformatParameter` warnings in automated Chromium come from its headless SwiftShader WebGL capability probe; they are not emitted as application errors and did not appear as a functional issue in the human browser pass. Unity heap and production-CDN timing remain future measurements; JavaScript heap is not a valid substitute for Unity WebAssembly heap usage.
+
+## Detailed Krishna Mandir baseline — 2026-09-10
+
+Test environment: Windows 11, Intel Iris Xe Graphics, 32 GB system memory, automated Chromium with DPR capped at 1.5, and the Brotli-aware local server.
+
+| Measurement | Result |
+|---|---:|
+| Total generated Web files | 13,432,834 bytes / 12.81 MiB |
+| Brotli data file | 8,285,268 bytes |
+| Brotli WebAssembly file | 5,050,040 bytes |
+| Renderers / materials / colliders | 88 / 11 / 87 |
+| Instanced scene triangles | 113,938 |
+| Missing scripts | 0 |
+| Detailed Krishna Mandir top | 19.67 m |
+| Application console errors | 0 |
+
+The detailed original Krishna Mandir remains below the compressed transfer and triangle budgets. Browser loading reached 100%, the detailed textured exterior rendered successfully, and all compressed data, JavaScript, and WebAssembly responses returned the required MIME and Brotli headers.

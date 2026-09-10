@@ -23,24 +23,31 @@ namespace PatanExplorer.Editor
         private const string PLAYER_PREFAB_PATH = "Assets/Patan/Prefabs/Player/FirstPersonPlayer.prefab";
         private const string FRUSTUM_MESH_PATH = "Assets/Patan/Art/Meshes/Greybox/SquareFrustum.asset";
         private const string MATERIAL_PATH = "Assets/Patan/Art/Materials/";
+        private const string KRISHNA_MODEL_PATH = "Assets/Patan/Art/KrishnaMandir/Models/KrishnaMandir.fbx";
+        private const string KRISHNA_TEXTURE_PATH = "Assets/Patan/Art/KrishnaMandir/Textures/";
+        private const string KRISHNA_MATERIAL_PATH = "Assets/Patan/Art/KrishnaMandir/Materials/";
         private const string INPUT_ACTIONS_PATH = "Assets/InputSystem_Actions.inputactions";
 
-        [MenuItem("Patan/Create Greybox Milestone")]
+        [MenuItem("Patan/Create Public Milestone")]
         public static void CreateMilestone()
         {
-            ConfigureProject();
+            CreateMilestoneScene(SCENE_PATH);
+        }
 
-            Material stoneMaterial = GetMaterial("WarmStone", new Color(0.44f, 0.42f, 0.36f), 0.12f, 0f);
+        private static void CreateMilestoneScene(string scenePath)
+        {
+            ConfigureProject();
+            ConfigureKrishnaAssetImporters();
+
             Material lightStoneMaterial = GetMaterial("LightStone", new Color(0.58f, 0.55f, 0.46f), 0.16f, 0f);
             Material brickMaterial = GetMaterial("NewariBrick", new Color(0.36f, 0.115f, 0.07f), 0.08f, 0f);
             Material darkBrickMaterial = GetMaterial("DarkBrick", new Color(0.22f, 0.065f, 0.045f), 0.06f, 0f);
             Material timberMaterial = GetMaterial("DarkTimber", new Color(0.12f, 0.045f, 0.02f), 0.18f, 0f);
             Material bronzeMaterial = GetMaterial("AgedBronze", new Color(0.43f, 0.25f, 0.055f), 0.3f, 0.7f);
             Material pavingMaterial = GetMaterial("BrickPaving", new Color(0.29f, 0.105f, 0.075f), 0.06f, 0f);
-            Mesh frustumMesh = GetFrustumMesh();
 
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            scene.name = "PatanSquare";
+            scene.name = Path.GetFileNameWithoutExtension(scenePath);
 
             GameObject systems = new GameObject("Systems");
             GameObject world = new GameObject("World");
@@ -55,41 +62,49 @@ namespace PatanExplorer.Editor
             GameObject ui = new GameObject("UI");
 
             CreateGround(groundAndStreets.transform, pavingMaterial, lightStoneMaterial);
-            CreateKrishnaPlaceholder(heroLandmark.transform, frustumMesh, stoneMaterial, lightStoneMaterial, bronzeMaterial);
+            if (!CreateKrishnaModel(heroLandmark.transform))
+            {
+                throw new InvalidOperationException($"Public Krishna Mandir model not found at {KRISHNA_MODEL_PATH}");
+            }
+
             CreateSecondaryTemple("VishwanathTemple", secondaryTemples.transform, new Vector3(-14f, 0f, 8f), 11.5f, brickMaterial, timberMaterial, bronzeMaterial);
             CreateSecondaryTemple("CharNarayanTemple", secondaryTemples.transform, new Vector3(-13f, 0f, -12f), 10.5f, darkBrickMaterial, timberMaterial, bronzeMaterial);
             CreatePalaceFacade(palaceFacade.transform, brickMaterial, darkBrickMaterial, timberMaterial);
             CreateNewariFacades(newariFacades.transform, visualBoundary.transform, brickMaterial, darkBrickMaterial, timberMaterial);
-            CreateGarudaMarker(props.transform, lightStoneMaterial, bronzeMaterial);
+            CreateGarudaMarker(props.transform, lightStoneMaterial, bronzeMaterial, 13f);
             CreateLighting(lighting.transform);
 
             GameObject capturePrompt = CreateHud(ui.transform);
             GameObject player = CreatePlayer(capturePrompt);
             player.transform.SetSiblingIndex(systems.transform.GetSiblingIndex() + 1);
 
-            EditorSceneManager.SaveScene(scene, SCENE_PATH);
-            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(SCENE_PATH, true) };
+            EditorSceneManager.SaveScene(scene, scenePath);
+            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(scenePath, true) };
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log($"Created Patan greybox milestone at {SCENE_PATH}");
+            Debug.Log($"Created public Patan milestone with the detailed Krishna Mandir at {scenePath}.");
         }
 
         [MenuItem("Patan/Build Web Release")]
         public static void BuildWebRelease()
         {
             CreateMilestone();
+            BuildWebScene(SCENE_PATH, "WebGreybox");
+        }
 
+        private static void BuildWebScene(string scenePath, string outputDirectoryName)
+        {
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.WebGL)
             {
                 throw new BuildFailedException("Run this method with the WebGL build target active.");
             }
 
-            string outputPath = Path.GetFullPath(Path.Combine(Application.dataPath, "../../../Builds/WebGreybox"));
+            string outputPath = Path.GetFullPath(Path.Combine(Application.dataPath, $"../../../Builds/{outputDirectoryName}"));
             Directory.CreateDirectory(outputPath);
 
             BuildPlayerOptions buildOptions = new BuildPlayerOptions
             {
-                scenes = new[] { SCENE_PATH },
+                scenes = new[] { scenePath },
                 locationPathName = outputPath,
                 target = BuildTarget.WebGL,
                 subtarget = (int)WebGLTextureSubtarget.DXT,
@@ -141,6 +156,100 @@ namespace PatanExplorer.Editor
 #endif
         }
 
+        private static void ConfigureKrishnaAssetImporters()
+        {
+            ConfigureKrishnaModelImporter();
+            string[] materialNames = { "StoneBase", "StoneWalls", "Mandap", "BronzeTrim", "GuardLions" };
+            foreach (string materialName in materialNames)
+            {
+                ConfigureKrishnaTextureImporter($"{KRISHNA_TEXTURE_PATH}{materialName}_BaseColor.png", TextureImporterType.Default, true, false);
+                ConfigureKrishnaTextureImporter($"{KRISHNA_TEXTURE_PATH}{materialName}_Normal.png", TextureImporterType.NormalMap, false, false);
+                ConfigureKrishnaTextureImporter($"{KRISHNA_TEXTURE_PATH}{materialName}_MetallicSmoothness.png", TextureImporterType.Default, false, true);
+            }
+        }
+
+        private static void ConfigureKrishnaModelImporter()
+        {
+            ModelImporter importer = AssetImporter.GetAtPath(KRISHNA_MODEL_PATH) as ModelImporter;
+            if (importer == null)
+            {
+                throw new InvalidOperationException($"Unable to load the Krishna Mandir model importer at {KRISHNA_MODEL_PATH}");
+            }
+
+            bool requiresReimport = importer.materialImportMode != ModelImporterMaterialImportMode.None
+                || importer.importAnimation
+                || importer.importBlendShapes
+                || importer.importCameras
+                || importer.importLights
+                || importer.addCollider
+                || importer.isReadable
+                || importer.meshCompression != ModelImporterMeshCompression.Medium
+                || importer.importNormals != ModelImporterNormals.Import
+                || importer.importTangents != ModelImporterTangents.CalculateMikk
+                || !importer.bakeAxisConversion
+                || !importer.optimizeMeshPolygons
+                || !importer.optimizeMeshVertices;
+            if (!requiresReimport)
+            {
+                return;
+            }
+
+            importer.materialImportMode = ModelImporterMaterialImportMode.None;
+            importer.importAnimation = false;
+            importer.importBlendShapes = false;
+            importer.importCameras = false;
+            importer.importLights = false;
+            importer.addCollider = false;
+            importer.isReadable = false;
+            importer.meshCompression = ModelImporterMeshCompression.Medium;
+            importer.importNormals = ModelImporterNormals.Import;
+            importer.importTangents = ModelImporterTangents.CalculateMikk;
+            importer.bakeAxisConversion = true;
+            importer.optimizeMeshPolygons = true;
+            importer.optimizeMeshVertices = true;
+            importer.SaveAndReimport();
+        }
+
+        private static void ConfigureKrishnaTextureImporter(string path, TextureImporterType textureType, bool usesSrgb, bool usesAlpha)
+        {
+            TextureImporter importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (importer == null)
+            {
+                throw new InvalidOperationException($"Unable to load the Krishna Mandir texture importer at {path}");
+            }
+
+            TextureImporterAlphaSource alphaSource = usesAlpha ? TextureImporterAlphaSource.FromInput : TextureImporterAlphaSource.None;
+            bool requiresReimport = importer.textureType != textureType
+                || importer.sRGBTexture != usesSrgb
+                || importer.alphaSource != alphaSource
+                || importer.maxTextureSize != 1024
+                || !importer.mipmapEnabled
+                || importer.textureCompression != TextureImporterCompression.Compressed
+                || !importer.crunchedCompression
+                || importer.compressionQuality != 70
+                || importer.wrapMode != TextureWrapMode.Repeat
+                || importer.filterMode != FilterMode.Trilinear
+                || importer.anisoLevel != 4;
+            if (!requiresReimport)
+            {
+                return;
+            }
+
+            importer.textureType = textureType;
+            importer.sRGBTexture = usesSrgb;
+            importer.alphaSource = alphaSource;
+            importer.alphaIsTransparency = false;
+            importer.maxTextureSize = 1024;
+            importer.mipmapEnabled = true;
+            importer.textureCompression = TextureImporterCompression.Compressed;
+            importer.crunchedCompression = true;
+            importer.compressionQuality = 70;
+            importer.wrapMode = TextureWrapMode.Repeat;
+            importer.filterMode = FilterMode.Trilinear;
+            importer.anisoLevel = 4;
+            importer.SaveAndReimport();
+        }
+
         private static GameObject CreateRoot(string name, Transform parent)
         {
             GameObject root = new GameObject(name);
@@ -158,52 +267,99 @@ namespace PatanExplorer.Editor
             CreateCube("WestStoneBand", parent, new Vector3(-10f, 0.04f, 0f), new Vector3(0.4f, 0.05f, 47f), stoneMaterial);
         }
 
-        private static void CreateKrishnaPlaceholder(Transform parent, Mesh frustumMesh, Material stoneMaterial, Material lightStoneMaterial, Material bronzeMaterial)
+        private static bool CreateKrishnaModel(Transform parent)
         {
-            CreateCube("PlinthLower", parent, new Vector3(0f, 0.3f, 0f), new Vector3(12f, 0.6f, 12f), lightStoneMaterial);
-            CreateCube("PlinthUpper", parent, new Vector3(0f, 0.85f, 0f), new Vector3(10.8f, 0.5f, 10.8f), stoneMaterial);
-            CreateCube("SanctumCore", parent, new Vector3(0f, 2.85f, 0f), new Vector3(6.5f, 3.5f, 6.5f), stoneMaterial);
-
-            float[] columnOffsets = { -4.25f, -2.85f, -1.4f, 0f, 1.4f, 2.85f, 4.25f };
-            foreach (float offset in columnOffsets)
+            GameObject modelAsset = AssetDatabase.LoadAssetAtPath<GameObject>(KRISHNA_MODEL_PATH);
+            if (modelAsset == null)
             {
-                CreateCylinder($"NorthColumn{offset}", parent, new Vector3(offset, 2.85f, 4.25f), 0.18f, 3.5f, lightStoneMaterial);
-                CreateCylinder($"SouthColumn{offset}", parent, new Vector3(offset, 2.85f, -4.25f), 0.18f, 3.5f, lightStoneMaterial);
+                return false;
             }
 
-            float[] sideColumnOffsets = { -2.85f, -1.4f, 0f, 1.4f, 2.85f };
-            foreach (float offset in sideColumnOffsets)
+            GameObject modelInstance = PrefabUtility.InstantiatePrefab(modelAsset, parent) as GameObject;
+            if (modelInstance == null)
             {
-                CreateCylinder($"EastColumn{offset}", parent, new Vector3(4.25f, 2.85f, offset), 0.18f, 3.5f, lightStoneMaterial);
-                CreateCylinder($"WestColumn{offset}", parent, new Vector3(-4.25f, 2.85f, offset), 0.18f, 3.5f, lightStoneMaterial);
+                throw new InvalidOperationException("Unable to instantiate the Krishna Mandir model.");
             }
 
-            CreateCube("LowerCornice", parent, new Vector3(0f, 4.8f, 0f), new Vector3(9.8f, 0.4f, 9.8f), lightStoneMaterial);
-            CreateCube("FirstGallery", parent, new Vector3(0f, 6.1f, 0f), new Vector3(7.2f, 2.2f, 7.2f), stoneMaterial);
-            CreateCube("MiddleCornice", parent, new Vector3(0f, 7.38f, 0f), new Vector3(8.4f, 0.36f, 8.4f), lightStoneMaterial);
-            CreateCube("SecondGallery", parent, new Vector3(0f, 8.46f, 0f), new Vector3(5.8f, 1.8f, 5.8f), stoneMaterial);
-            CreateCube("UpperCornice", parent, new Vector3(0f, 9.52f, 0f), new Vector3(7f, 0.32f, 7f), lightStoneMaterial);
-            CreateFrustum("MainShikhara", parent, frustumMesh, new Vector3(0f, 9.68f, 0f), new Vector3(5.8f, 7f, 5.8f), stoneMaterial);
-            CreateFrustum("UpperShikhara", parent, frustumMesh, new Vector3(0f, 16.68f, 0f), new Vector3(3.4f, 2.17f, 3.4f), lightStoneMaterial);
-            CreateCylinder("CentralPinnacle", parent, new Vector3(0f, 19.26f, 0f), 0.18f, 0.82f, bronzeMaterial);
+            modelInstance.name = "DetailedExterior";
+            modelInstance.transform.localPosition = Vector3.zero;
+            modelInstance.transform.localRotation = Quaternion.identity;
+            modelInstance.transform.localScale = Vector3.one;
 
-            Vector3[] pavilionPositions =
+            Renderer[] renderers = modelInstance.GetComponentsInChildren<Renderer>(true);
+            foreach (Renderer renderer in renderers)
             {
-                new Vector3(-2.6f, 9.68f, -2.6f),
-                new Vector3(-2.6f, 9.68f, 2.6f),
-                new Vector3(2.6f, 9.68f, -2.6f),
-                new Vector3(2.6f, 9.68f, 2.6f)
-            };
-            for (int index = 0; index < pavilionPositions.Length; index++)
-            {
-                Vector3 position = pavilionPositions[index];
-                CreateFrustum($"CornerPavilion{index + 1}", parent, frustumMesh, position, new Vector3(1.25f, 2.8f, 1.25f), stoneMaterial);
-                CreateCylinder($"CornerPinnacle{index + 1}", parent, position + Vector3.up * 3.05f, 0.1f, 0.5f, bronzeMaterial);
+                string materialName = GetKrishnaMaterialName(renderer.gameObject.name);
+                renderer.sharedMaterial = GetKrishnaMaterial(materialName);
+                renderer.shadowCastingMode = ShadowCastingMode.On;
+                renderer.receiveShadows = true;
+                GameObjectUtility.SetStaticEditorFlags(renderer.gameObject, StaticEditorFlags.BatchingStatic | StaticEditorFlags.OccluderStatic | StaticEditorFlags.OccludeeStatic);
             }
 
-            CreateCube("StepLower", parent, new Vector3(6.25f, 0.15f, 0f), new Vector3(1.4f, 0.3f, 3.4f), lightStoneMaterial);
-            CreateCube("StepMiddle", parent, new Vector3(5.7f, 0.3f, 0f), new Vector3(0.8f, 0.6f, 3.1f), lightStoneMaterial);
-            CreateCube("StepUpper", parent, new Vector3(5.25f, 0.45f, 0f), new Vector3(0.55f, 0.9f, 2.8f), lightStoneMaterial);
+            CreateKrishnaCollision(parent);
+            return true;
+        }
+
+        private static string GetKrishnaMaterialName(string objectName)
+        {
+            switch (objectName)
+            {
+                case "StoneBase":
+                case "StoneWalls":
+                case "Mandap":
+                case "BronzeTrim":
+                case "GuardLions":
+                    return objectName;
+                default:
+                    throw new InvalidOperationException($"Krishna Mandir mesh has no material mapping: {objectName}");
+            }
+        }
+
+        private static Material GetKrishnaMaterial(string name)
+        {
+            string materialPath = $"{KRISHNA_MATERIAL_PATH}{name}.mat";
+            Material material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
+            if (material == null)
+            {
+                Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+                if (shader == null)
+                {
+                    throw new InvalidOperationException("URP Lit shader is unavailable.");
+                }
+
+                material = new Material(shader) { name = name };
+                AssetDatabase.CreateAsset(material, materialPath);
+            }
+
+            Texture2D baseColor = AssetDatabase.LoadAssetAtPath<Texture2D>($"{KRISHNA_TEXTURE_PATH}{name}_BaseColor.png");
+            Texture2D normal = AssetDatabase.LoadAssetAtPath<Texture2D>($"{KRISHNA_TEXTURE_PATH}{name}_Normal.png");
+            Texture2D metallicSmoothness = AssetDatabase.LoadAssetAtPath<Texture2D>($"{KRISHNA_TEXTURE_PATH}{name}_MetallicSmoothness.png");
+            if (baseColor == null || normal == null || metallicSmoothness == null)
+            {
+                throw new InvalidOperationException($"Krishna Mandir material textures are incomplete for {name}.");
+            }
+
+            material.SetColor("_BaseColor", Color.white);
+            material.SetTexture("_BaseMap", baseColor);
+            material.SetTexture("_BumpMap", normal);
+            material.SetFloat("_BumpScale", 1f);
+            material.SetTexture("_MetallicGlossMap", metallicSmoothness);
+            material.SetFloat("_Metallic", 1f);
+            material.SetFloat("_Smoothness", 1f);
+            material.SetFloat("_SmoothnessTextureChannel", 0f);
+            material.EnableKeyword("_NORMALMAP");
+            material.EnableKeyword("_METALLICSPECGLOSSMAP");
+            material.enableInstancing = true;
+            EditorUtility.SetDirty(material);
+            return material;
+        }
+
+        private static void CreateKrishnaCollision(Transform parent)
+        {
+            GameObject collision = CreateRoot("Collision", parent);
+            CreateBoxCollider("PlinthCollision", collision.transform, new Vector3(0f, 0.58f, 0f), new Vector3(15.75f, 1.16f, 15.75f), Quaternion.identity);
+            CreateBoxCollider("TempleCollision", collision.transform, new Vector3(0f, 4.7f, 0f), new Vector3(11f, 7.05f, 11f), Quaternion.identity);
+            CreateBoxCollider("StairCollision", collision.transform, new Vector3(8.65f, 0.56f, 0f), new Vector3(3.6f, 0.18f, 2.6f), Quaternion.Euler(0f, 0f, -18f));
         }
 
         private static void CreateSecondaryTemple(string name, Transform parent, Vector3 center, float height, Material wallMaterial, Material timberMaterial, Material metalMaterial)
@@ -266,14 +422,14 @@ namespace PatanExplorer.Editor
             CreateCube("EastBoundary", boundaryParent, new Vector3(30f, 3f, 0f), new Vector3(1f, 6f, 60f), darkBrickMaterial);
         }
 
-        private static void CreateGarudaMarker(Transform parent, Material stoneMaterial, Material bronzeMaterial)
+        private static void CreateGarudaMarker(Transform parent, Material stoneMaterial, Material bronzeMaterial, float positionX)
         {
-            CreateCube("GarudaPlinth", parent, new Vector3(9.5f, 0.45f, 0f), new Vector3(2.2f, 0.9f, 2.2f), stoneMaterial);
-            CreateCylinder("GarudaColumn", parent, new Vector3(9.5f, 3.7f, 0f), 0.38f, 5.6f, stoneMaterial);
+            CreateCube("GarudaPlinth", parent, new Vector3(positionX, 0.45f, 0f), new Vector3(2.2f, 0.9f, 2.2f), stoneMaterial);
+            CreateCylinder("GarudaColumn", parent, new Vector3(positionX, 3.7f, 0f), 0.38f, 5.6f, stoneMaterial);
             GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             marker.name = "GarudaMarker";
             marker.transform.SetParent(parent, false);
-            marker.transform.localPosition = new Vector3(9.5f, 6.8f, 0f);
+            marker.transform.localPosition = new Vector3(positionX, 6.8f, 0f);
             marker.transform.localScale = new Vector3(0.85f, 1.2f, 0.85f);
             marker.GetComponent<Renderer>().sharedMaterial = bronzeMaterial;
         }
@@ -317,7 +473,7 @@ namespace PatanExplorer.Editor
             Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             CreateText("Controls", canvasObject.transform, font, "WASD / Arrows   Move\nMouse   Look\nShift   Run\nSpace   Jump\nEscape   Release cursor", 23, TextAnchor.UpperLeft, new Vector2(28f, -24f), new Vector2(430f, 170f), new Vector2(0f, 1f), new Vector2(0f, 1f));
             CreateText("Crosshair", canvasObject.transform, font, "+", 25, TextAnchor.MiddleCenter, Vector2.zero, new Vector2(40f, 40f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
-            Text title = CreateText("MilestoneTitle", canvasObject.transform, font, "PATAN  /  GREYBOX MILESTONE", 19, TextAnchor.UpperRight, new Vector2(-28f, -24f), new Vector2(520f, 42f), new Vector2(1f, 1f), new Vector2(1f, 1f));
+            Text title = CreateText("MilestoneTitle", canvasObject.transform, font, "PATAN  /  EXPLORATION MILESTONE", 19, TextAnchor.UpperRight, new Vector2(-28f, -24f), new Vector2(520f, 42f), new Vector2(1f, 1f), new Vector2(1f, 1f));
             title.color = new Color(1f, 0.88f, 0.65f);
             Text prompt = CreateText("CapturePrompt", canvasObject.transform, font, "CLICK TO EXPLORE", 30, TextAnchor.MiddleCenter, new Vector2(0f, 105f), new Vector2(520f, 70f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f));
             prompt.color = new Color(1f, 0.88f, 0.65f);
@@ -398,6 +554,15 @@ namespace PatanExplorer.Editor
             FirstPersonController controller = player.GetComponent<FirstPersonController>();
             controller.Configure(inputActions, player.transform.Find("FirstPersonCamera"), capturePrompt);
             return player;
+        }
+
+        private static void CreateBoxCollider(string name, Transform parent, Vector3 position, Vector3 size, Quaternion rotation)
+        {
+            GameObject colliderObject = new GameObject(name, typeof(BoxCollider));
+            colliderObject.transform.SetParent(parent, false);
+            colliderObject.transform.localPosition = position;
+            colliderObject.transform.localRotation = rotation;
+            colliderObject.GetComponent<BoxCollider>().size = size;
         }
 
         private static GameObject CreateCube(string name, Transform parent, Vector3 position, Vector3 scale, Material material)

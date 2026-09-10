@@ -8,7 +8,7 @@
 
 ## Included
 
-- Survey-derived Krishna Mandir exterior and major site layout after written data permission is secured
+- Original artist-authored Krishna Mandir exterior and provisional major site layout
 - Simplified Vishwanath Temple and Char Narayan Temple exteriors
 - Garuda column and statue ensemble
 - Simplified palace frontage
@@ -24,4 +24,4 @@
 - NPCs, quests, dialogue, combat, interaction mechanics, inventory, saves, accounts, analytics, multiplayer, backend, database, runtime AI, day/night, weather, procedural generation, and mobile touch controls
 - Addressables, runtime OSM/GIS, Unity Terrain, and streaming systems
 
-The first milestone is a 60 m by 60 m greybox Web build. It must prove loading, movement, collision, and browser performance before final art is imported.
+The current milestone is a 60 m by 60 m Web build with greybox surroundings and the detailed original Krishna Mandir exterior. It must prove loading, movement, collision, and browser performance before the remaining final art is imported.

@@ -8,8 +8,11 @@
 /Unity/PatanExplorer/MemoryCaptures/
 /Unity/PatanExplorer/Recordings/
 /Builds/*
+/Krishna mandir/
 /ArtSource/References/Restricted/*
 /WorldData/Survey/Restricted/*
+/Unity/PatanExplorer/Assets/Patan/Restricted/
+/Unity/PatanExplorer/Assets/Patan/Restricted.meta
 *.csproj
 *.sln
 *.suo
@@ -35,3 +38,5 @@ __pycache__/
 .DS_Store
 Thumbs.db
 sysinfo.txt
+/.devin
+/.playwright-mcp

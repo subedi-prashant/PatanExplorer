@@ -15,6 +15,7 @@ namespace PatanExplorer.Editor
     {
         private const string SCENE_PATH = "Assets/Patan/Scenes/PatanSquare.unity";
         private const string INPUT_ACTIONS_PATH = "Assets/InputSystem_Actions.inputactions";
+        private const long MAX_TRIANGLE_COUNT = 600000;
 
         [Serializable]
         private sealed class ValidationReport
@@ -32,11 +33,16 @@ namespace PatanExplorer.Editor
             public string[] Errors;
         }
 
-        [MenuItem("Patan/Validate Greybox Milestone")]
+        [MenuItem("Patan/Validate Public Milestone")]
         public static void ValidateMilestone()
         {
+            ValidateScene(SCENE_PATH, "WebGreybox", "GreyboxValidation.json");
+        }
+
+        private static void ValidateScene(string scenePath, string buildDirectoryName, string reportFileName)
+        {
             List<string> errors = new List<string>();
-            Scene scene = EditorSceneManager.OpenScene(SCENE_PATH, OpenSceneMode.Single);
+            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
             string[] requiredRoots = { "Systems", "Player", "World", "Lighting", "UI" };
             foreach (string rootName in requiredRoots)
             {
@@ -48,6 +54,7 @@ namespace PatanExplorer.Editor
 
             GameObject hero = GameObject.Find("World/KrishnaMandir");
             float heroTop = GetHeroTop(hero, errors);
+            ValidateKrishnaModel(hero, errors);
             ValidatePlayer(errors);
             int inputActionCount = ValidateInputActions(errors);
 
@@ -87,9 +94,18 @@ namespace PatanExplorer.Editor
 
             foreach (MeshFilter meshFilter in meshFilters)
             {
-                if (meshFilter.gameObject.scene == scene && meshFilter.sharedMesh != null)
+                if (meshFilter.gameObject.scene != scene || meshFilter.sharedMesh == null)
                 {
-                    triangleCount += meshFilter.sharedMesh.triangles.LongLength / 3;
+                    continue;
+                }
+
+                Mesh mesh = meshFilter.sharedMesh;
+                for (int subMeshIndex = 0; subMeshIndex < mesh.subMeshCount; subMeshIndex++)
+                {
+                    if (mesh.GetTopology(subMeshIndex) == MeshTopology.Triangles)
+                    {
+                        triangleCount += (long)mesh.GetIndexCount(subMeshIndex) / 3;
+                    }
                 }
             }
 
@@ -112,13 +128,18 @@ namespace PatanExplorer.Editor
                 errors.Add("Scene has no colliders.");
             }
 
+            if (triangleCount > MAX_TRIANGLE_COUNT)
+            {
+                errors.Add($"Scene has {triangleCount} triangles, exceeding the {MAX_TRIANGLE_COUNT} triangle budget.");
+            }
+
             string repositoryPath = Path.GetFullPath(Path.Combine(Application.dataPath, "../../.."));
-            string buildPath = Path.Combine(repositoryPath, "Builds", "WebGreybox");
+            string buildPath = Path.Combine(repositoryPath, "Builds", buildDirectoryName);
             long compressedBuildBytes = GetDirectoryBytes(buildPath);
             ValidationReport report = new ValidationReport
             {
                 UnityVersion = Application.unityVersion,
-                ScenePath = SCENE_PATH,
+                ScenePath = scenePath,
                 RendererCount = rendererCount,
                 MaterialCount = materialIds.Count,
                 ColliderCount = colliderCount,
@@ -130,16 +151,43 @@ namespace PatanExplorer.Editor
                 Errors = errors.ToArray()
             };
 
-            string reportPath = Path.Combine(repositoryPath, "Builds", "GreyboxValidation.json");
+            string reportPath = Path.Combine(repositoryPath, "Builds", reportFileName);
             Directory.CreateDirectory(Path.GetDirectoryName(reportPath));
             File.WriteAllText(reportPath, JsonUtility.ToJson(report, true));
 
             if (errors.Count > 0)
             {
-                throw new BuildFailedException($"Greybox validation failed. See {reportPath}");
+                throw new BuildFailedException($"Milestone validation failed. See {reportPath}");
             }
 
-            Debug.Log($"Greybox validation passed. Renderers: {rendererCount}, materials: {materialIds.Count}, colliders: {colliderCount}, triangles: {triangleCount}, hero top: {heroTop:F2} m, build bytes: {compressedBuildBytes}.");
+            Debug.Log($"Milestone validation passed. Renderers: {rendererCount}, materials: {materialIds.Count}, colliders: {colliderCount}, triangles: {triangleCount}, hero top: {heroTop:F2} m, build bytes: {compressedBuildBytes}.");
+        }
+
+        private static void ValidateKrishnaModel(GameObject hero, List<string> errors)
+        {
+            if (hero == null)
+            {
+                return;
+            }
+
+            Transform detailedExterior = hero.transform.Find("DetailedExterior");
+            if (detailedExterior == null)
+            {
+                errors.Add("Public milestone does not contain the detailed Krishna Mandir exterior.");
+                return;
+            }
+
+            Renderer[] renderers = detailedExterior.GetComponentsInChildren<Renderer>(true);
+            if (renderers.Length != 5)
+            {
+                errors.Add($"Detailed Krishna Mandir has {renderers.Length} renderers instead of 5.");
+            }
+
+            Collider[] colliders = hero.GetComponentsInChildren<Collider>(true);
+            if (colliders.Length < 3)
+            {
+                errors.Add($"Detailed Krishna Mandir has {colliders.Length} colliders instead of at least 3.");
+            }
         }
 
         private static float GetHeroTop(GameObject hero, List<string> errors)
@@ -166,7 +214,7 @@ namespace PatanExplorer.Editor
             float heroTop = bounds.max.y;
             if (Mathf.Abs(heroTop - 19.67f) > 0.03f)
             {
-                errors.Add($"Krishna Mandir placeholder top is {heroTop:F3} m instead of 19.67 m.");
+                errors.Add($"Krishna Mandir top is {heroTop:F3} m instead of 19.67 m.");
             }
 
             return heroTop;
