@@ -35,12 +35,12 @@
       <div class="loading-card">
         <p class="eyebrow">Lalitpur, Nepal</p>
         <h1>Loading Patan</h1>
-        <p class="subtitle">Preparing the Krishna Mandir exploration milestone</p>
+        <p class="subtitle">Preparing the Patan driving milestone</p>
         <div class="track"><div id="progress"></div></div>
         <div id="status">Starting 0%</div>
       </div>
     </section>
-    <div id="controls">WASD · MOVE &nbsp;&nbsp; MOUSE · LOOK &nbsp;&nbsp; SHIFT · RUN &nbsp;&nbsp; SPACE · JUMP &nbsp;&nbsp; ESC · RELEASE</div>
+    <div id="controls">WASD · MOVE / DRIVE &nbsp;&nbsp; MOUSE · LOOK / ORBIT &nbsp;&nbsp; ENTER · VEHICLE &nbsp;&nbsp; SPACE · JUMP / BRAKE &nbsp;&nbsp; ESC · RELEASE</div>
     <button id="fullscreen" type="button">Fullscreen</button>
     <div id="error" role="alert"></div>
     <div id="device-warning">Desktop keyboard and mouse are required for this milestone.</div>
@@ -86,6 +86,7 @@
         progress.style.width = percentage + "%";
         status.textContent = "Loading " + percentage + "%";
       }).then((instance) => {
+        window.patanReadyAt = performance.now();
         loading.classList.add("hidden");
         controls.style.display = "none";
         canvas.focus();

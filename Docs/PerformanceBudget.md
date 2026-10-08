@@ -58,3 +58,33 @@ Test environment: Windows 11, Intel Iris Xe Graphics, 32 GB system memory, autom
 | Application console errors | 0 |
 
 The detailed original Krishna Mandir remains below the compressed transfer and triangle budgets. Browser loading reached 100%, the detailed textured exterior rendered successfully, and all compressed data, JavaScript, and WebAssembly responses returned the required MIME and Brotli headers.
+
+## Driving milestone baseline — 2026-10-08
+
+Test environment: Windows 11, automated Chromium with DPR capped at 1.5, the Brotli-aware local server, a cleared browser cache, and simulated 50 Mbps download bandwidth with 40 ms latency. Frame cadence was sampled after Unity reached ready state. This replaces the 2026-10-02 measurement, which predated the pre-rendered audio, the zero-friction body collider, and the nose-direction fix.
+
+| Measurement | Result |
+|---|---:|
+| Total generated Web files | 15,905,256 bytes / 15.17 MiB |
+| Brotli data file | 10,655,322 bytes |
+| Brotli WebAssembly file | 5,148,378 bytes |
+| Cold Unity-ready time at simulated 50 Mbps and 40 ms latency | 3.991 seconds |
+| Warm-cache Unity-ready time | 1.550 seconds |
+| Focused five-second frame sample | 300 frames |
+| Average frame interval | 16.635 ms |
+| 95th percentile frame interval | 17.0 ms |
+| Renderers / materials / colliders | 121 / 23 / 101 |
+| Instanced scene triangles | 262,718 |
+| Optimized Ferrari triangles | 148,576 |
+| Vehicle audio (five 22.05 kHz mono WAV clips, in the Brotli data file) | about 0.1 MB compressed |
+| Playable area | 90 m east-west by 120 m north-south |
+| Drive smoke test | Passed |
+| Missing scripts | 0 |
+| Detailed Krishna Mandir top | 19.67 m |
+| Application console errors | 0 |
+
+The expanded road, vehicle, textures, audio, and vehicle code remain below the compressed transfer and 600,000-triangle budgets. The Ferrari rendered upright with its nose pointing along the road at its spawn, loading reached 100%, all Brotli headers were correct, and the only automated-browser warnings were the six previously documented headless WebGL capability probes.
+
+Drive smoke test measurements (physics stepped at 50 Hz in the Editor): 2.47 m measured wheelbase against the F40's real 2.46 m, no drift when parked, 20.0 m/s after two seconds of throttle over 20.6 m, 38.7 degrees of yaw in 0.6 s at 8 m/s in both directions, a stop from 12 m/s in 2.9 m, and 10.2 m of travel in reverse over two seconds.
+
+Headless Chromium cannot sustain Unity pointer lock (`WrongDocumentError`), so Enter transitions, camera collision, and audible output still require the normal human browser control pass.

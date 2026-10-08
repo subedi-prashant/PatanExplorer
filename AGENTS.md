@@ -2,7 +2,7 @@
 
 ## Scope
 
-This repository is a browser-first Unity vertical slice of Patan Durbar Square. Keep the MVP limited to the documented 120 m by 90 m core. Do not add NPCs, quests, combat, inventory, multiplayer, backend services, runtime AI, procedural generation, interiors, Addressables, runtime GIS, or mobile controls without an approved scope change.
+This repository is a browser-first Unity vertical slice of Patan Durbar Square. Keep the MVP limited to the documented 120 m by 90 m core. The approved slice includes one rectangular road loop and one noncommercial enterable vehicle with lightweight arcade handling, a third-person camera, and original synthesized placeholder audio. Do not add more vehicles, traffic AI, racing systems, NPCs, quests, combat, inventory, multiplayer, backend services, runtime AI, procedural generation, interiors, Addressables, runtime GIS, or mobile controls without an approved scope change.
 
 Krishna Mandir and major site layout may be called survey-derived only after written data permission is archived. Never commit restricted survey scans or references.
 
@@ -29,7 +29,15 @@ Start-Process -FilePath $unityEditor -ArgumentList $validationArguments -Wait
 python Deployment/serve_web.py --directory Builds/WebGreybox --port 8080
 ```
 
-Verify the Brotli response headers, browser console, loading state, WASD/mouse/Shift/Space/Escape controls, collision route, build bytes, and frame cadence. Update `Docs/PerformanceBudget.md` after each major art phase.
+Verify the Brotli response headers, browser console, loading state, walking and driving controls, Enter transitions, third-person camera collision, vehicle audio, road and temple collision routes, build bytes, and frame cadence. Update `Docs/PerformanceBudget.md` after each major art phase.
+
+## Hard-won lessons
+
+- Batch-mode Unity needs Unity Hub running (its licensing client supplies the Personal entitlement). Exit code 198 or `com.unity.editor.headless was not found` means start Hub and retry.
+- `ValidateMilestone` runs the drive smoke test (`PatanDriveSmokeTest`). Keep it passing; it verifies nose direction, acceleration, steering and wheel direction, braking, and reverse without entering Play mode. When changing a sign or axis, confirm the test fails with the wrong sign before trusting it.
+- The Ferrari body collider must keep the zero-friction `FerrariBody` physics material. With default friction the box on asphalt cancels nearly all engine force and the car crawls at 0.1 m/s. Traction, braking, and rolling resistance are handled in `ArcadeVehicleController`.
+- Never generate audio at runtime with `AudioClip.Create` or `SetData`; Unity WebGL does not support that for uncompressed clips and the sound is silent. Pre-render WAV files with `ArtSource/Audio/generate_vehicle_audio.py` and import them as `Decompress On Load`.
+- The headless Chromium used for automated checks cannot hold pointer lock (`WrongDocumentError`), so Enter, driving, and audio need a human pass in a normal browser.
 
 ## Code and assets
 

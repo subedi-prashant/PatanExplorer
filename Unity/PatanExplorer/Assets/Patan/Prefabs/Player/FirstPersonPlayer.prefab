@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4776733350072156741}
   - component: {fileID: 3983320762793408292}
   - component: {fileID: 291237690529892300}
+  - component: {fileID: 4287272971894624313}
   m_Layer: 2
   m_Name: FirstPersonPlayer
   m_TagString: Untagged
@@ -80,6 +81,26 @@ MonoBehaviour:
   gravity: -20
   mouseSensitivity: 0.08
   maximumPitch: 85
+--- !u!114 &4287272971894624313
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7770169638298681612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c7fd405984048f45a868a8852b504a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PatanExplorer.Vehicles.VehicleInteractionController
+  inputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  firstPersonController: {fileID: 291237690529892300}
+  vehicleCamera: {fileID: 4271586052172856311}
+  vehicle: {fileID: 0}
+  interactionPrompt: {fileID: 0}
+  crosshair: {fileID: 0}
+  interactionDistance: 3.2
+  maximumExitSpeed: 1.5
 --- !u!1 &8806866430256568879
 GameObject:
   m_ObjectHideFlags: 0
@@ -92,6 +113,7 @@ GameObject:
   - component: {fileID: 8451344484093135267}
   - component: {fileID: 3661163873272561489}
   - component: {fileID: 2178219427298483314}
+  - component: {fileID: 4271586052172856311}
   m_Layer: 2
   m_Name: FirstPersonCamera
   m_TagString: MainCamera
@@ -146,7 +168,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.05
-  far clip plane: 110
+  far clip plane: 180
   field of view: 72
   orthographic: 0
   orthographic size: 5
@@ -217,3 +239,25 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &4271586052172856311
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8806866430256568879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9089736ae03046d4a9e6c626e97c3527, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PatanExplorer.Vehicles.ThirdPersonVehicleCamera
+  inputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  distance: 5.6
+  targetHeight: 0.25
+  defaultPitch: 14
+  minimumPitch: 5
+  maximumPitch: 35
+  mouseSensitivity: 0.08
+  positionSmoothTime: 0.08
+  rotationSharpness: 14
+  collisionRadius: 0.2
