@@ -28,12 +28,22 @@ namespace PatanExplorer.Player
         private InputAction releaseCursorAction;
         private float verticalSpeed;
         private float cameraPitch;
+        private bool explorationEnabled = true;
 
         public void Configure(InputActionAsset actions, Transform firstPersonCamera, GameObject prompt)
         {
             inputActions = actions;
             cameraTransform = firstPersonCamera;
             capturePrompt = prompt;
+        }
+
+        public void SetExplorationEnabled(bool isEnabled)
+        {
+            explorationEnabled = isEnabled;
+            if (!isEnabled)
+            {
+                verticalSpeed = 0f;
+            }
         }
 
         private void Awake()
@@ -58,6 +68,11 @@ namespace PatanExplorer.Player
         private void Update()
         {
             HandleCursor();
+            if (!explorationEnabled)
+            {
+                return;
+            }
+
             UpdateLook();
             UpdateMovement();
         }

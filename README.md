@@ -1,6 +1,6 @@
 # Patan Explorer
 
-Patan Explorer is a browser-first, first-person 3D vertical slice of Patan Durbar Square in Lalitpur, Nepal. The current milestone centers on an original, detailed Krishna Mandir exterior surrounded by a simplified environment for testing scale, movement, collision, lighting, browser loading, and performance.
+Patan Explorer is a browser-first 3D vertical slice of Patan Durbar Square in Lalitpur, Nepal. The current milestone combines first-person exploration with an enterable third-person vehicle around an original, detailed Krishna Mandir exterior for testing scale, movement, driving, collision, lighting, audio, browser loading, and performance.
 
 ## Current milestone
 
@@ -10,8 +10,9 @@ The playable environment is limited to a 120 m by 90 m core and includes:
 - Simplified Vishwanath Temple and Char Narayan Temple exteriors
 - The Garuda column ensemble
 - A simplified palace frontage and Newari facade shells
-- Plaza surfaces, paths, visual boundaries, lighting, and haze
+- Plaza surfaces, a rectangular perimeter road, expanded visual boundaries, lighting, and haze
 - First-person walking, running, jumping, mouse look, and cursor capture
+- One optimized enterable Ferrari F40 with arcade handling, wheel motion, a third-person orbit camera, and original synthesized placeholder audio (engine, road, skid, start, and impact sounds)
 - A custom Brotli-compressed WebGL loading page
 
 The MVP intentionally excludes NPCs, quests, combat, inventory, multiplayer, authentication, backend services, runtime AI, procedural city generation, interiors, and mobile controls.
@@ -20,10 +21,11 @@ The MVP intentionally excludes NPCs, quests, combat, inventory, multiplayer, aut
 
 | Input | Action |
 |---|---|
-| `WASD` or arrow keys | Move |
-| Mouse | Look around |
-| Left or right `Shift` | Run |
-| `Space` | Jump |
+| `WASD` or arrow keys | Walk on foot; accelerate/reverse and steer while driving |
+| Mouse | Look around on foot; orbit the third-person camera while driving |
+| Left or right `Shift` | Run on foot |
+| `Space` | Jump on foot; brake while driving |
+| `Enter` | Enter the nearby car; exit after stopping |
 | Left mouse button | Capture the cursor |
 | `Escape` | Release the cursor |
 | Fullscreen button | Enter browser fullscreen mode |
@@ -258,7 +260,19 @@ Successful validation creates:
 Builds/GreyboxValidation.json
 ```
 
-The report includes renderer, material, collider, input-action, missing-script, triangle, hero-height, and compressed-build measurements.
+The report includes renderer, material, collider, input-action, missing-script, total and vehicle triangle, playable-area, hero-height, drive-smoke-test, and compressed-build measurements.
+
+The validator also runs a scripted drive smoke test that steps the saved scene's physics without entering Play mode. It asserts that the car faces its drive direction, stays parked at rest, accelerates, turns in the correct direction (both the body and the front wheel visuals), brakes, reverses, and spins its wheels forward. Run it alone with **Patan > Run Drive Smoke Test**, or in batch mode with `-executeMethod PatanExplorer.Editor.PatanDriveSmokeTest.RunBatch`.
+
+### Regenerating the vehicle audio
+
+The five vehicle sounds are original synthesized WAV files in `Unity/PatanExplorer/Assets/Patan/Audio/Vehicles/FerrariF40`. Regenerate them with:
+
+```powershell
+python ArtSource/Audio/generate_vehicle_audio.py Unity/PatanExplorer/Assets/Patan/Audio/Vehicles/FerrariF40
+```
+
+They are pre-rendered rather than generated at runtime because Unity WebGL does not support `AudioClip.SetData` on uncompressed clips, which makes runtime-generated sound silent in the browser.
 
 ### Start the local browser server
 
@@ -312,7 +326,7 @@ Expected headers:
 | `.framework.js.br` | `application/javascript` | `br` |
 | `.wasm.br` | `application/wasm` | `br` |
 
-Also verify that the loading screen reaches 100%, the detailed Krishna Mandir renders, the browser console has no application errors, cursor capture works, and the player cannot pass through the temple collision.
+Also verify that the loading screen reaches 100%, the detailed Krishna Mandir and Ferrari render, the browser console has no application errors, cursor capture works, the player cannot pass through temple collision, Enter transitions cleanly between walking and driving, the third-person camera avoids walls, the car stays on the road loop, and engine/road/brake audio responds to speed.
 
 ## Deploy to Netlify
 
@@ -378,6 +392,8 @@ Also check the Unity Console and the browser developer console for the first err
 
 - `Unity/PatanExplorer`: Unity project
 - `Unity/PatanExplorer/Assets/Patan/Art/KrishnaMandir`: public optimized Krishna Mandir FBX, textures, and materials
+- `Unity/PatanExplorer/Assets/Patan/Art/Vehicles/FerrariF40`: optimized noncommercial vehicle FBX, textures, and materials
+- `ArtSource/Blender/prepare_ferrari_f40.py`: deterministic Blender reduction/export script for the supplied raw GLB
 - `ArtSource`: Blender and source texture work
 - `WorldData`: OSM provenance, survey metadata, and local world anchor
 - `Docs`: MVP scope, performance budgets, and survey/source policy
@@ -388,5 +404,7 @@ Also check the Unity Console and the browser developer console for the first err
 ## Asset rights and restricted source material
 
 The optimized Krishna Mandir shipping asset is original project artwork recorded as **All rights reserved** in `Licenses/AssetRegister.csv`. Public repository access does not grant reuse rights beyond those explicitly provided by the copyright holder.
+
+The Ferrari F40 model is credited to **bohmerang**, redistributed by **vecarz**, and used under **CC BY-NC-SA 4.0**. The optimized derivative and any build containing it are noncommercial, retain attribution in the HUD and asset register, and carry the same license terms for that model. This project is not affiliated with or endorsed by Ferrari or Liberty Walk.
 
 Survey scans, restricted photographs, third-party references, and other source material must not be committed unless their terms explicitly permit redistribution. Keep restricted source material in the ignored locations documented by the project policy.
