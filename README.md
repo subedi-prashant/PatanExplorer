@@ -4,15 +4,16 @@ Patan Explorer is a browser-first 3D vertical slice of Patan Durbar Square in La
 
 ## Current milestone
 
-The playable environment is limited to a 120 m by 90 m core and includes:
+The playable environment spans a 240 m north-south by 180 m east-west monument zone and includes:
 
 - The detailed Krishna Mandir exterior with textured materials and collision
-- Simplified Vishwanath Temple and Char Narayan Temple exteriors
-- The Garuda column ensemble
-- A simplified palace frontage and Newari facade shells
-- Plaza surfaces, a rectangular perimeter road, expanded visual boundaries, lighting, and haze
+- Real Patan Durbar Square temples and monuments: Bhimsen Mandir, Vishwanath Temple, Char Narayan Temple, Narayan Temple, Narsimha Shikhara Temple, Hari Shankar Temple, Taleju Bell, Chyasin Dewal (octagonal stone Krishna temple), Bhai Dega Temple, Swotha Narayan Temple, and Radha Krishna Temple
+- The Garuda column, King Yoganarendra Malla pillar, and Bhimsen lion column
+- The Malla Royal Palace complex (Bahadur Shah Wing, Keshav Narayan Chowk / Patan Museum, Degutale Temple tower, Mul Chowk with Yantaju Shrine and South Taleju Temple, Sundari Chowk with Tusha Hiti royal bath, and Bhandarkhal Royal Garden with Kamal Pokhari pond)
+- Manga Hiti and Maharani Hiti sunken water spouts, Manimandap North & South pavilions, Kot Pati, Buddhist chaityas, and surrounding Newari town blocks
+- Brick plaza surfaces, connected perimeter and cross-avenue roads, expanded visual boundaries, lighting, and haze
 - First-person walking, running, jumping, mouse look, and cursor capture
-- One optimized enterable Ferrari F40 with arcade handling, wheel motion, a third-person orbit camera, and original synthesized placeholder audio (engine, road, skid, start, and impact sounds)
+- One optimized enterable Ferrari F40 with unrestricted free-roam arcade handling across roads, plazas, and streets, wheel motion, a third-person orbit camera, and original synthesized placeholder audio (engine, road, skid, start, and impact sounds)
 - A custom Brotli-compressed WebGL loading page
 
 The MVP intentionally excludes NPCs, quests, combat, inventory, multiplayer, authentication, backend services, runtime AI, procedural city generation, interiors, and mobile controls.

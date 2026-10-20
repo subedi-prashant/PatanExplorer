@@ -34,6 +34,24 @@ namespace PatanExplorer.Editor
         private const string FERRARI_AUDIO_PATH = "Assets/Patan/Audio/Vehicles/FerrariF40/";
         private const string FERRARI_PHYSICS_MATERIAL_PATH = "Assets/Patan/Prefabs/Vehicles/FerrariBody.asset";
         private const string INPUT_ACTIONS_PATH = "Assets/InputSystem_Actions.inputactions";
+        private const float PLAYABLE_WIDTH = 180f;
+        private const float PLAYABLE_LENGTH = 240f;
+
+        private sealed class PatanMaterialPalette
+        {
+            public Material LightStone;
+            public Material Brick;
+            public Material DarkBrick;
+            public Material Timber;
+            public Material Bronze;
+            public Material Paving;
+            public Material Asphalt;
+            public Material RoadLine;
+            public Material WhitePlaster;
+            public Material TerracottaRoof;
+            public Material WaterBasin;
+            public Material GardenGrass;
+        }
 
         private sealed class HudReferences
         {
@@ -54,14 +72,21 @@ namespace PatanExplorer.Editor
             ConfigureKrishnaAssetImporters();
             ConfigureFerrariAssetImporters();
 
-            Material lightStoneMaterial = GetMaterial("LightStone", new Color(0.58f, 0.55f, 0.46f), 0.16f, 0f);
-            Material brickMaterial = GetMaterial("NewariBrick", new Color(0.36f, 0.115f, 0.07f), 0.08f, 0f);
-            Material darkBrickMaterial = GetMaterial("DarkBrick", new Color(0.22f, 0.065f, 0.045f), 0.06f, 0f);
-            Material timberMaterial = GetMaterial("DarkTimber", new Color(0.12f, 0.045f, 0.02f), 0.18f, 0f);
-            Material bronzeMaterial = GetMaterial("AgedBronze", new Color(0.43f, 0.25f, 0.055f), 0.3f, 0.7f);
-            Material pavingMaterial = GetMaterial("BrickPaving", new Color(0.29f, 0.105f, 0.075f), 0.06f, 0f);
-            Material asphaltMaterial = GetMaterial("RoadAsphalt", new Color(0.055f, 0.052f, 0.048f), 0.22f, 0f);
-            Material roadLineMaterial = GetMaterial("RoadLine", new Color(0.78f, 0.7f, 0.5f), 0.16f, 0f);
+            PatanMaterialPalette palette = new PatanMaterialPalette
+            {
+                LightStone = GetMaterial("LightStone", new Color(0.58f, 0.55f, 0.46f), 0.16f, 0f),
+                Brick = GetMaterial("NewariBrick", new Color(0.36f, 0.115f, 0.07f), 0.08f, 0f),
+                DarkBrick = GetMaterial("DarkBrick", new Color(0.22f, 0.065f, 0.045f), 0.06f, 0f),
+                Timber = GetMaterial("DarkTimber", new Color(0.12f, 0.045f, 0.02f), 0.18f, 0f),
+                Bronze = GetMaterial("AgedBronze", new Color(0.43f, 0.25f, 0.055f), 0.3f, 0.7f),
+                Paving = GetMaterial("BrickPaving", new Color(0.29f, 0.105f, 0.075f), 0.06f, 0f),
+                Asphalt = GetMaterial("RoadAsphalt", new Color(0.055f, 0.052f, 0.048f), 0.22f, 0f),
+                RoadLine = GetMaterial("RoadLine", new Color(0.78f, 0.7f, 0.5f), 0.16f, 0f),
+                WhitePlaster = GetMaterial("WhitePlaster", new Color(0.86f, 0.83f, 0.77f), 0.12f, 0f),
+                TerracottaRoof = GetMaterial("TerracottaRoof", new Color(0.44f, 0.16f, 0.085f), 0.14f, 0f),
+                WaterBasin = GetMaterial("WaterBasin", new Color(0.11f, 0.24f, 0.26f), 0.78f, 0.05f),
+                GardenGrass = GetMaterial("GardenGrass", new Color(0.19f, 0.29f, 0.14f), 0.08f, 0f)
+            };
 
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             scene.name = Path.GetFileNameWithoutExtension(scenePath);
@@ -79,17 +104,16 @@ namespace PatanExplorer.Editor
             GameObject lighting = new GameObject("Lighting");
             GameObject ui = new GameObject("UI");
 
-            CreateGround(groundAndStreets.transform, pavingMaterial, lightStoneMaterial, asphaltMaterial, roadLineMaterial);
+            CreateGround(groundAndStreets.transform, palette);
             if (!CreateKrishnaModel(heroLandmark.transform))
             {
                 throw new InvalidOperationException($"Public Krishna Mandir model not found at {KRISHNA_MODEL_PATH}");
             }
 
-            CreateSecondaryTemple("VishwanathTemple", secondaryTemples.transform, new Vector3(-14f, 0f, 8f), 11.5f, brickMaterial, timberMaterial, bronzeMaterial);
-            CreateSecondaryTemple("CharNarayanTemple", secondaryTemples.transform, new Vector3(-13f, 0f, -12f), 10.5f, darkBrickMaterial, timberMaterial, bronzeMaterial);
-            CreatePalaceFacade(palaceFacade.transform, brickMaterial, darkBrickMaterial, timberMaterial);
-            CreateNewariFacades(newariFacades.transform, visualBoundary.transform, brickMaterial, darkBrickMaterial, timberMaterial);
-            CreateGarudaMarker(props.transform, lightStoneMaterial, bronzeMaterial, 13f);
+            CreateDurbarTemples(secondaryTemples.transform, palette);
+            CreatePalaceComplex(palaceFacade.transform, palette);
+            CreateNewariNeighborhoods(newariFacades.transform, visualBoundary.transform, palette);
+            CreateSquareMonumentsAndHitis(props.transform, palette);
             CreateLighting(lighting.transform);
 
             ArcadeVehicleController vehicle = CreateFerrariVehicle(vehicles.transform);
@@ -101,7 +125,7 @@ namespace PatanExplorer.Editor
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(scenePath, true) };
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log($"Created the 120 by 90 meter Patan driving milestone at {scenePath}.");
+            Debug.Log($"Created the {PLAYABLE_LENGTH:F0} by {PLAYABLE_WIDTH:F0} meter Patan driving milestone at {scenePath}.");
         }
 
         [MenuItem("Patan/Build Web Release")]
@@ -408,32 +432,45 @@ namespace PatanExplorer.Editor
             return root;
         }
 
-        private static void CreateGround(Transform parent, Material pavingMaterial, Material stoneMaterial, Material asphaltMaterial, Material roadLineMaterial)
+        private static void CreateGround(Transform parent, PatanMaterialPalette palette)
         {
-            CreateCube("GroundCollision", parent, new Vector3(0f, -0.2f, 0f), new Vector3(90f, 0.4f, 120f), pavingMaterial);
-            CreateCube("CentralPlaza", parent, new Vector3(0f, 0.015f, 0f), new Vector3(68f, 0.03f, 98f), pavingMaterial);
-            CreateCube("NorthStoneBand", parent, new Vector3(0f, 0.035f, 13f), new Vector3(42f, 0.04f, 0.45f), stoneMaterial);
-            CreateCube("SouthStoneBand", parent, new Vector3(0f, 0.035f, -13f), new Vector3(42f, 0.04f, 0.45f), stoneMaterial);
-            CreateCube("EastStoneBand", parent, new Vector3(10f, 0.04f, 0f), new Vector3(0.4f, 0.05f, 47f), stoneMaterial);
-            CreateCube("WestStoneBand", parent, new Vector3(-10f, 0.04f, 0f), new Vector3(0.4f, 0.05f, 47f), stoneMaterial);
+            CreateCube("GroundCollision", parent, new Vector3(0f, -0.12f, 0f), new Vector3(PLAYABLE_WIDTH, 0.4f, PLAYABLE_LENGTH), palette.Paving);
+            CreateVisualCube("CentralPlaza", parent, new Vector3(-4f, 0.042f, 0f), new Vector3(64f, 0.084f, 184f), palette.Paving);
+            CreateVisualCube("NorthStoneBand", parent, new Vector3(-2f, 0.045f, 13f), new Vector3(48f, 0.09f, 0.45f), palette.LightStone);
+            CreateVisualCube("SouthStoneBand", parent, new Vector3(-2f, 0.045f, -13f), new Vector3(48f, 0.09f, 0.45f), palette.LightStone);
+            CreateVisualCube("NorthPlazaBand", parent, new Vector3(-2f, 0.045f, 44f), new Vector3(48f, 0.09f, 0.45f), palette.LightStone);
+            CreateVisualCube("SouthPlazaBand", parent, new Vector3(-2f, 0.045f, -40f), new Vector3(48f, 0.09f, 0.45f), palette.LightStone);
+            CreateVisualCube("EastStoneBand", parent, new Vector3(20.5f, 0.046f, 0f), new Vector3(0.45f, 0.092f, 176f), palette.LightStone);
+            CreateVisualCube("WestStoneBand", parent, new Vector3(-10f, 0.046f, 0f), new Vector3(0.4f, 0.092f, 88f), palette.LightStone);
+            CreateVisualCube("RoyalProcessionBand", parent, new Vector3(7.5f, 0.046f, 0f), new Vector3(1.1f, 0.092f, 176f), palette.LightStone);
 
             GameObject roadLoop = CreateRoot("RoadLoop", parent);
-            CreateCube("NorthRoad", roadLoop.transform, new Vector3(0f, 0.04f, 52.5f), new Vector3(82f, 0.08f, 7f), asphaltMaterial);
-            CreateCube("SouthRoad", roadLoop.transform, new Vector3(0f, 0.04f, -52.5f), new Vector3(82f, 0.08f, 7f), asphaltMaterial);
-            CreateCube("EastRoad", roadLoop.transform, new Vector3(37.5f, 0.04f, 0f), new Vector3(7f, 0.08f, 112f), asphaltMaterial);
-            CreateCube("WestRoad", roadLoop.transform, new Vector3(-37.5f, 0.04f, 0f), new Vector3(7f, 0.08f, 112f), asphaltMaterial);
-            CreateVisualCube("NorthCenterLine", roadLoop.transform, new Vector3(0f, 0.09f, 52.5f), new Vector3(68f, 0.02f, 0.12f), roadLineMaterial);
-            CreateVisualCube("SouthCenterLine", roadLoop.transform, new Vector3(0f, 0.09f, -52.5f), new Vector3(68f, 0.02f, 0.12f), roadLineMaterial);
-            CreateVisualCube("EastCenterLine", roadLoop.transform, new Vector3(37.5f, 0.09f, 0f), new Vector3(0.12f, 0.02f, 98f), roadLineMaterial);
-            CreateVisualCube("WestCenterLine", roadLoop.transform, new Vector3(-37.5f, 0.09f, 0f), new Vector3(0.12f, 0.02f, 98f), roadLineMaterial);
-            CreateCube("NorthInnerCurb", roadLoop.transform, new Vector3(0f, 0.12f, 48.85f), new Vector3(68f, 0.16f, 0.3f), stoneMaterial);
-            CreateCube("SouthInnerCurb", roadLoop.transform, new Vector3(0f, 0.12f, -48.85f), new Vector3(68f, 0.16f, 0.3f), stoneMaterial);
-            CreateCube("EastInnerCurb", roadLoop.transform, new Vector3(33.85f, 0.12f, 0f), new Vector3(0.3f, 0.16f, 98f), stoneMaterial);
-            CreateCube("WestInnerCurb", roadLoop.transform, new Vector3(-33.85f, 0.12f, 0f), new Vector3(0.3f, 0.16f, 98f), stoneMaterial);
-            CreateCube("NorthOuterCurb", roadLoop.transform, new Vector3(0f, 0.12f, 56.15f), new Vector3(82f, 0.16f, 0.3f), stoneMaterial);
-            CreateCube("SouthOuterCurb", roadLoop.transform, new Vector3(0f, 0.12f, -56.15f), new Vector3(82f, 0.16f, 0.3f), stoneMaterial);
-            CreateCube("EastOuterCurb", roadLoop.transform, new Vector3(41.15f, 0.12f, 0f), new Vector3(0.3f, 0.16f, 112f), stoneMaterial);
-            CreateCube("WestOuterCurb", roadLoop.transform, new Vector3(-41.15f, 0.12f, 0f), new Vector3(0.3f, 0.16f, 112f), stoneMaterial);
+            CreateVisualCube("NorthRoad", roadLoop.transform, new Vector3(0f, 0.044f, 102f), new Vector3(160f, 0.088f, 8f), palette.Asphalt);
+            CreateVisualCube("SouthRoad", roadLoop.transform, new Vector3(0f, 0.044f, -102f), new Vector3(160f, 0.088f, 8f), palette.Asphalt);
+            CreateVisualCube("EastRoad", roadLoop.transform, new Vector3(76f, 0.044f, 0f), new Vector3(8f, 0.088f, 212f), palette.Asphalt);
+            CreateVisualCube("WestRoad", roadLoop.transform, new Vector3(-76f, 0.044f, 0f), new Vector3(8f, 0.088f, 212f), palette.Asphalt);
+            CreateVisualCube("NorthCenterLine", roadLoop.transform, new Vector3(0f, 0.09f, 102f), new Vector3(148f, 0.01f, 0.14f), palette.RoadLine);
+            CreateVisualCube("SouthCenterLine", roadLoop.transform, new Vector3(0f, 0.09f, -102f), new Vector3(148f, 0.01f, 0.14f), palette.RoadLine);
+            CreateVisualCube("EastCenterLine", roadLoop.transform, new Vector3(76f, 0.09f, 0f), new Vector3(0.14f, 0.01f, 198f), palette.RoadLine);
+            CreateVisualCube("WestCenterLine", roadLoop.transform, new Vector3(-76f, 0.09f, 0f), new Vector3(0.14f, 0.01f, 198f), palette.RoadLine);
+
+            CreateVisualCube("SouthCrossAvenue", roadLoop.transform, new Vector3(0f, 0.044f, -52.5f), new Vector3(156f, 0.088f, 7.5f), palette.Asphalt);
+            CreateVisualCube("SouthCrossCenterLine", roadLoop.transform, new Vector3(0f, 0.09f, -52.5f), new Vector3(144f, 0.01f, 0.12f), palette.RoadLine);
+            CreateVisualCube("NorthCrossAvenue", roadLoop.transform, new Vector3(0f, 0.044f, 54f), new Vector3(156f, 0.088f, 7.5f), palette.Asphalt);
+            CreateVisualCube("NorthCrossCenterLine", roadLoop.transform, new Vector3(0f, 0.09f, 54f), new Vector3(144f, 0.01f, 0.12f), palette.RoadLine);
+            CreateVisualCube("WestInnerAvenue", roadLoop.transform, new Vector3(-37.5f, 0.044f, 0f), new Vector3(7f, 0.088f, 206f), palette.Asphalt);
+            CreateVisualCube("WestInnerCenterLine", roadLoop.transform, new Vector3(-37.5f, 0.09f, 0f), new Vector3(0.12f, 0.01f, 194f), palette.RoadLine);
+            CreateVisualCube("EastPalaceAvenue", roadLoop.transform, new Vector3(53.5f, 0.044f, 0f), new Vector3(6.5f, 0.088f, 206f), palette.Asphalt);
+            CreateVisualCube("EastPalaceCenterLine", roadLoop.transform, new Vector3(53.5f, 0.09f, 0f), new Vector3(0.12f, 0.01f, 194f), palette.RoadLine);
+
+            CreateVisualCube("NorthInnerCurb", roadLoop.transform, new Vector3(0f, 0.048f, 97.85f), new Vector3(144f, 0.096f, 0.3f), palette.LightStone);
+            CreateVisualCube("SouthInnerCurb", roadLoop.transform, new Vector3(0f, 0.048f, -97.85f), new Vector3(144f, 0.096f, 0.3f), palette.LightStone);
+            CreateVisualCube("EastInnerCurb", roadLoop.transform, new Vector3(71.85f, 0.048f, 0f), new Vector3(0.3f, 0.096f, 196f), palette.LightStone);
+            CreateVisualCube("WestInnerCurb", roadLoop.transform, new Vector3(-71.85f, 0.048f, 0f), new Vector3(0.3f, 0.096f, 196f), palette.LightStone);
+            CreateVisualCube("NorthOuterCurb", roadLoop.transform, new Vector3(0f, 0.048f, 106.15f), new Vector3(160f, 0.096f, 0.3f), palette.LightStone);
+            CreateVisualCube("SouthOuterCurb", roadLoop.transform, new Vector3(0f, 0.048f, -106.15f), new Vector3(160f, 0.096f, 0.3f), palette.LightStone);
+            CreateVisualCube("EastOuterCurb", roadLoop.transform, new Vector3(80.15f, 0.048f, 0f), new Vector3(0.3f, 0.096f, 212f), palette.LightStone);
+            CreateVisualCube("WestOuterCurb", roadLoop.transform, new Vector3(-80.15f, 0.048f, 0f), new Vector3(0.3f, 0.096f, 212f), palette.LightStone);
         }
 
         private static bool CreateKrishnaModel(Transform parent)
@@ -837,65 +874,503 @@ namespace PatanExplorer.Editor
             }
         }
 
-        private static void CreateSecondaryTemple(string name, Transform parent, Vector3 center, float height, Material wallMaterial, Material timberMaterial, Material metalMaterial)
+        private static void CreateDurbarTemples(Transform parent, PatanMaterialPalette palette)
+        {
+            CreateBhimsenMandir(parent, new Vector3(-14f, 0f, 36f), palette);
+            CreateVishwanathTemple(parent, new Vector3(-14f, 0f, 15f), palette);
+            CreateCharNarayanTemple(parent, new Vector3(-13f, 0f, -15f), palette);
+            CreateTwoTierPagoda("NarayanTemple", parent, new Vector3(-25f, 0f, -15f), 10.2f, 6.6f, palette.Brick, palette.Timber, palette.TerracottaRoof, palette.Bronze);
+            CreateNarsimhaShikharaTemple(parent, new Vector3(-25f, 0f, -28f), palette);
+            CreateThreeTierPagoda("HariShankarTemple", parent, new Vector3(-13.5f, 0f, -31f), 15.8f, 8.8f, palette.DarkBrick, palette.Timber, palette.TerracottaRoof, palette.Bronze);
+            CreateTalejuBellMonument(parent, new Vector3(-11.5f, 0f, -43.5f), palette);
+            CreateChyasinDewalTemple(parent, new Vector3(-14f, 0f, -66f), palette);
+            CreateThreeTierPagoda("BhaiDegaTemple", parent, new Vector3(-29f, 0f, -68f), 14.8f, 8.4f, palette.Brick, palette.Timber, palette.TerracottaRoof, palette.Bronze);
+            CreateTwoTierPagoda("SwothaNarayanTemple", parent, new Vector3(-14f, 0f, 76f), 11.4f, 7.4f, palette.Brick, palette.Timber, palette.TerracottaRoof, palette.Bronze);
+            CreateThreeTierPagoda("RadhaKrishnaTemple", parent, new Vector3(15f, 0f, 76f), 13.8f, 7.8f, palette.DarkBrick, palette.Timber, palette.TerracottaRoof, palette.Bronze);
+        }
+
+        private static void CreateBhimsenMandir(Transform parent, Vector3 center, PatanMaterialPalette palette)
+        {
+            GameObject temple = CreateRoot("BhimsenMandir", parent);
+            temple.transform.localPosition = center;
+            Mesh frustumMesh = GetFrustumMesh();
+
+            CreateCube("LowerPlinth", temple.transform, new Vector3(0f, 0.35f, 0f), new Vector3(9.4f, 0.7f, 12.6f), palette.LightStone);
+            CreateCube("UpperPlinth", temple.transform, new Vector3(0f, 0.9f, 0f), new Vector3(8.2f, 0.5f, 11.4f), palette.Brick);
+            CreateCube("EastSteps", temple.transform, new Vector3(4.5f, 0.45f, 0f), new Vector3(1.4f, 0.7f, 3.2f), palette.LightStone);
+            CreateCube("FirstStory", temple.transform, new Vector3(0f, 2.95f, 0f), new Vector3(6.8f, 3.6f, 9.8f), palette.Brick);
+            CreateCube("GoldenWindowBay", temple.transform, new Vector3(3.48f, 3.35f, 0f), new Vector3(0.28f, 1.65f, 5.2f), palette.Bronze);
+            CreateCube("FirstRoofEave", temple.transform, new Vector3(0f, 4.9f, 0f), new Vector3(9.2f, 0.32f, 12.2f), palette.TerracottaRoof);
+            CreateCube("SecondStory", temple.transform, new Vector3(0f, 6.45f, 0f), new Vector3(5.4f, 2.8f, 8.2f), palette.DarkBrick);
+            CreateCube("SecondRoofEave", temple.transform, new Vector3(0f, 8.0f, 0f), new Vector3(7.6f, 0.32f, 10.4f), palette.TerracottaRoof);
+            CreateCube("ThirdStory", temple.transform, new Vector3(0f, 9.35f, 0f), new Vector3(4.0f, 2.4f, 6.4f), palette.Brick);
+            CreateCube("ThirdRoofEave", temple.transform, new Vector3(0f, 10.7f, 0f), new Vector3(6.0f, 0.3f, 8.6f), palette.Bronze);
+            CreateFrustum("RoofCap", temple.transform, frustumMesh, new Vector3(0f, 10.85f, 0f), new Vector3(4.6f, 4.2f, 6.8f), palette.Bronze);
+            CreateCylinder("CenterPinnacle", temple.transform, new Vector3(0f, 15.65f, 0f), 0.18f, 1.2f, palette.Bronze);
+            CreateCylinder("NorthPinnacle", temple.transform, new Vector3(0f, 15.35f, 1.5f), 0.12f, 0.85f, palette.Bronze);
+            CreateCylinder("SouthPinnacle", temple.transform, new Vector3(0f, 15.35f, -1.5f), 0.12f, 0.85f, palette.Bronze);
+        }
+
+        private static void CreateVishwanathTemple(Transform parent, Vector3 center, PatanMaterialPalette palette)
+        {
+            GameObject temple = CreateRoot("VishwanathTemple", parent);
+            temple.transform.localPosition = center;
+            Mesh frustumMesh = GetFrustumMesh();
+
+            CreateCube("LowerPlinth", temple.transform, new Vector3(0f, 0.35f, 0f), new Vector3(8.8f, 0.7f, 8.8f), palette.Brick);
+            CreateCube("UpperPlinth", temple.transform, new Vector3(0f, 0.9f, 0f), new Vector3(7.4f, 0.5f, 7.4f), palette.DarkBrick);
+            CreateCube("EastStairs", temple.transform, new Vector3(4.2f, 0.45f, 0f), new Vector3(1.5f, 0.75f, 2.4f), palette.LightStone);
+            CreateCube("NorthElephantPedestal", temple.transform, new Vector3(4.7f, 0.6f, 1.65f), new Vector3(1.3f, 1.0f, 0.9f), palette.LightStone);
+            CreateCube("NorthElephantBody", temple.transform, new Vector3(4.7f, 1.55f, 1.65f), new Vector3(1.4f, 1.1f, 0.85f), palette.LightStone);
+            CreateCube("SouthElephantPedestal", temple.transform, new Vector3(4.7f, 0.6f, -1.65f), new Vector3(1.3f, 1.0f, 0.9f), palette.LightStone);
+            CreateCube("SouthElephantBody", temple.transform, new Vector3(4.7f, 1.55f, -1.65f), new Vector3(1.4f, 1.1f, 0.85f), palette.LightStone);
+            CreateCube("NandiPlinth", temple.transform, new Vector3(-5.2f, 0.55f, 0f), new Vector3(1.6f, 0.95f, 1.2f), palette.LightStone);
+            CreateCube("NandiStatue", temple.transform, new Vector3(-5.2f, 1.3f, 0f), new Vector3(1.2f, 0.7f, 0.75f), palette.Bronze);
+
+            CreateCube("LowerBody", temple.transform, new Vector3(0f, 2.85f, 0f), new Vector3(5.8f, 3.4f, 5.8f), palette.Brick);
+            CreateCube("LowerRoof", temple.transform, new Vector3(0f, 4.7f, 0f), new Vector3(8.0f, 0.32f, 8.0f), palette.TerracottaRoof);
+            CreateCube("UpperBody", temple.transform, new Vector3(0f, 6.1f, 0f), new Vector3(4.4f, 2.5f, 4.4f), palette.DarkBrick);
+            CreateCube("UpperRoof", temple.transform, new Vector3(0f, 7.5f, 0f), new Vector3(6.2f, 0.32f, 6.2f), palette.TerracottaRoof);
+            CreateFrustum("RoofCap", temple.transform, frustumMesh, new Vector3(0f, 7.66f, 0f), new Vector3(3.8f, 3.9f, 3.8f), palette.Timber);
+            CreateCylinder("Pinnacle", temple.transform, new Vector3(0f, 12.0f, 0f), 0.15f, 0.95f, palette.Bronze);
+        }
+
+        private static void CreateCharNarayanTemple(Transform parent, Vector3 center, PatanMaterialPalette palette)
+        {
+            GameObject temple = CreateRoot("CharNarayanTemple", parent);
+            temple.transform.localPosition = center;
+            Mesh frustumMesh = GetFrustumMesh();
+
+            CreateCube("PlinthStage1", temple.transform, new Vector3(0f, 0.4f, 0f), new Vector3(9.6f, 0.8f, 9.6f), palette.Brick);
+            CreateCube("PlinthStage2", temple.transform, new Vector3(0f, 1.1f, 0f), new Vector3(8.0f, 0.65f, 8.0f), palette.DarkBrick);
+            CreateCube("EastStairs", temple.transform, new Vector3(4.6f, 0.55f, 0f), new Vector3(1.6f, 0.95f, 2.4f), palette.LightStone);
+            CreateCube("LowerBody", temple.transform, new Vector3(0f, 3.15f, 0f), new Vector3(5.9f, 3.5f, 5.9f), palette.Brick);
+            CreateCube("LowerRoof", temple.transform, new Vector3(0f, 5.05f, 0f), new Vector3(8.2f, 0.32f, 8.2f), palette.TerracottaRoof);
+            CreateCube("UpperBody", temple.transform, new Vector3(0f, 6.5f, 0f), new Vector3(4.4f, 2.6f, 4.4f), palette.DarkBrick);
+            CreateCube("UpperRoof", temple.transform, new Vector3(0f, 7.95f, 0f), new Vector3(6.2f, 0.32f, 6.2f), palette.TerracottaRoof);
+            CreateFrustum("RoofCap", temple.transform, frustumMesh, new Vector3(0f, 8.11f, 0f), new Vector3(3.8f, 3.6f, 3.8f), palette.Timber);
+            CreateCylinder("Pinnacle", temple.transform, new Vector3(0f, 12.15f, 0f), 0.16f, 0.9f, palette.Bronze);
+        }
+
+        private static void CreateTwoTierPagoda(
+            string name,
+            Transform parent,
+            Vector3 center,
+            float height,
+            float baseWidth,
+            Material wallMaterial,
+            Material timberMaterial,
+            Material roofMaterial,
+            Material metalMaterial)
         {
             GameObject temple = CreateRoot(name, parent);
             temple.transform.localPosition = center;
-            CreateCube("Plinth", temple.transform, new Vector3(0f, 0.35f, 0f), new Vector3(8f, 0.7f, 8f), wallMaterial);
-            CreateCube("LowerBody", temple.transform, new Vector3(0f, 2.4f, 0f), new Vector3(5.7f, 3.4f, 5.7f), wallMaterial);
-            CreateCube("LowerRoof", temple.transform, new Vector3(0f, 4.25f, 0f), new Vector3(7.4f, 0.3f, 7.4f), timberMaterial);
-            CreateCube("UpperBody", temple.transform, new Vector3(0f, 5.65f, 0f), new Vector3(4.3f, 2.5f, 4.3f), wallMaterial);
-            CreateCube("UpperRoof", temple.transform, new Vector3(0f, 7.05f, 0f), new Vector3(5.7f, 0.32f, 5.7f), timberMaterial);
-            CreateFrustum("RoofCap", temple.transform, GetFrustumMesh(), new Vector3(0f, 7.21f, 0f), new Vector3(3.2f, height - 7.65f, 3.2f), timberMaterial);
-            CreateCylinder("Pinnacle", temple.transform, new Vector3(0f, height - 0.22f, 0f), 0.12f, 0.44f, metalMaterial);
+            CreateCube("Plinth", temple.transform, new Vector3(0f, 0.4f, 0f), new Vector3(baseWidth, 0.8f, baseWidth), wallMaterial);
+            CreateCube("LowerBody", temple.transform, new Vector3(0f, 2.45f, 0f), new Vector3(baseWidth * 0.72f, 3.3f, baseWidth * 0.72f), wallMaterial);
+            CreateCube("LowerRoof", temple.transform, new Vector3(0f, 4.25f, 0f), new Vector3(baseWidth * 0.94f, 0.3f, baseWidth * 0.94f), roofMaterial);
+            CreateCube("UpperBody", temple.transform, new Vector3(0f, 5.65f, 0f), new Vector3(baseWidth * 0.54f, 2.5f, baseWidth * 0.54f), wallMaterial);
+            CreateCube("UpperRoof", temple.transform, new Vector3(0f, 7.05f, 0f), new Vector3(baseWidth * 0.74f, 0.32f, baseWidth * 0.74f), roofMaterial);
+            CreateFrustum("RoofCap", temple.transform, GetFrustumMesh(), new Vector3(0f, 7.21f, 0f), new Vector3(baseWidth * 0.44f, height - 7.65f, baseWidth * 0.44f), timberMaterial);
+            CreateCylinder("Pinnacle", temple.transform, new Vector3(0f, height - 0.22f, 0f), 0.13f, 0.6f, metalMaterial);
         }
 
-        private static void CreatePalaceFacade(Transform parent, Material brickMaterial, Material darkBrickMaterial, Material timberMaterial)
+        private static void CreateThreeTierPagoda(
+            string name,
+            Transform parent,
+            Vector3 center,
+            float height,
+            float baseWidth,
+            Material wallMaterial,
+            Material timberMaterial,
+            Material roofMaterial,
+            Material metalMaterial)
         {
-            CreateCube("PalaceMass", parent, new Vector3(25.8f, 4.5f, 0f), new Vector3(3.6f, 9f, 52f), brickMaterial);
-            CreateCube("PalaceRoofline", parent, new Vector3(23.8f, 9.25f, 0f), new Vector3(0.7f, 0.5f, 53f), timberMaterial);
-            CreateCube("CentralGate", parent, new Vector3(23.92f, 2.1f, 0f), new Vector3(0.22f, 4.2f, 3.6f), darkBrickMaterial);
+            GameObject temple = CreateRoot(name, parent);
+            temple.transform.localPosition = center;
+            Mesh frustumMesh = GetFrustumMesh();
+
+            CreateCube("LowerPlinth", temple.transform, new Vector3(0f, 0.4f, 0f), new Vector3(baseWidth + 1.4f, 0.8f, baseWidth + 1.4f), wallMaterial);
+            CreateCube("UpperPlinth", temple.transform, new Vector3(0f, 1.05f, 0f), new Vector3(baseWidth, 0.55f, baseWidth), wallMaterial);
+            CreateCube("Tier1Body", temple.transform, new Vector3(0f, 3.05f, 0f), new Vector3(baseWidth * 0.74f, 3.45f, baseWidth * 0.74f), wallMaterial);
+            CreateCube("Tier1Roof", temple.transform, new Vector3(0f, 4.95f, 0f), new Vector3(baseWidth * 0.98f, 0.32f, baseWidth * 0.98f), roofMaterial);
+            CreateCube("Tier2Body", temple.transform, new Vector3(0f, 6.45f, 0f), new Vector3(baseWidth * 0.56f, 2.7f, baseWidth * 0.56f), timberMaterial);
+            CreateCube("Tier2Roof", temple.transform, new Vector3(0f, 7.95f, 0f), new Vector3(baseWidth * 0.78f, 0.3f, baseWidth * 0.78f), roofMaterial);
+            CreateCube("Tier3Body", temple.transform, new Vector3(0f, 9.25f, 0f), new Vector3(baseWidth * 0.4f, 2.3f, baseWidth * 0.4f), wallMaterial);
+            CreateCube("Tier3Roof", temple.transform, new Vector3(0f, 10.55f, 0f), new Vector3(baseWidth * 0.58f, 0.3f, baseWidth * 0.58f), roofMaterial);
+            float capHeight = Mathf.Max(2.2f, height - 11.2f);
+            CreateFrustum("RoofCap", temple.transform, frustumMesh, new Vector3(0f, 10.7f, 0f), new Vector3(baseWidth * 0.42f, capHeight, baseWidth * 0.42f), timberMaterial);
+            CreateCylinder("Pinnacle", temple.transform, new Vector3(0f, 10.7f + capHeight + 0.45f, 0f), 0.16f, 0.95f, metalMaterial);
+        }
+
+        private static void CreateNarsimhaShikharaTemple(Transform parent, Vector3 center, PatanMaterialPalette palette)
+        {
+            GameObject temple = CreateRoot("NarsimhaTemple", parent);
+            temple.transform.localPosition = center;
+            Mesh frustumMesh = GetFrustumMesh();
+
+            CreateCube("Plinth1", temple.transform, new Vector3(0f, 0.35f, 0f), new Vector3(7.0f, 0.7f, 7.0f), palette.Brick);
+            CreateCube("Plinth2", temple.transform, new Vector3(0f, 0.95f, 0f), new Vector3(5.6f, 0.5f, 5.6f), palette.LightStone);
+            CreateCube("SanctumBody", temple.transform, new Vector3(0f, 2.8f, 0f), new Vector3(4.2f, 3.2f, 4.2f), palette.WhitePlaster);
+            CreateCube("EastPorch", temple.transform, new Vector3(2.4f, 2.3f, 0f), new Vector3(1.1f, 2.2f, 2.2f), palette.WhitePlaster);
+            CreateCube("CorniceBand", temple.transform, new Vector3(0f, 4.55f, 0f), new Vector3(4.6f, 0.35f, 4.6f), palette.LightStone);
+            CreateFrustum("ShikharaSpire", temple.transform, frustumMesh, new Vector3(0f, 4.72f, 0f), new Vector3(3.9f, 5.8f, 3.9f), palette.WhitePlaster);
+            CreateCylinder("AmalakaCrown", temple.transform, new Vector3(0f, 10.7f, 0f), 0.55f, 0.35f, palette.LightStone);
+            CreateCylinder("GajurFinial", temple.transform, new Vector3(0f, 11.25f, 0f), 0.14f, 0.85f, palette.Bronze);
+        }
+
+        private static void CreateTalejuBellMonument(Transform parent, Vector3 center, PatanMaterialPalette palette)
+        {
+            GameObject monument = CreateRoot("TalejuBell", parent);
+            monument.transform.localPosition = center;
+
+            CreateCube("LowerTerrace", monument.transform, new Vector3(0f, 0.55f, 0f), new Vector3(6.2f, 1.1f, 8.4f), palette.Brick);
+            CreateCube("UpperTerrace", monument.transform, new Vector3(0f, 1.35f, 0f), new Vector3(4.8f, 0.6f, 6.8f), palette.LightStone);
+            CreateCube("NorthPost", monument.transform, new Vector3(0f, 3.7f, 1.65f), new Vector3(0.65f, 4.2f, 0.65f), palette.LightStone);
+            CreateCube("SouthPost", monument.transform, new Vector3(0f, 3.7f, -1.65f), new Vector3(0.65f, 4.2f, 0.65f), palette.LightStone);
+            CreateCube("CrossBeam", monument.transform, new Vector3(0f, 5.95f, 0f), new Vector3(0.85f, 0.5f, 4.4f), palette.Timber);
+            CreateCube("BellCanopy", monument.transform, new Vector3(0f, 6.35f, 0f), new Vector3(2.4f, 0.32f, 5.2f), palette.Bronze);
+            CreateCylinder("GreatBell", monument.transform, new Vector3(0f, 4.35f, 0f), 0.82f, 1.75f, palette.Bronze);
+            CreateCylinder("BellCrown", monument.transform, new Vector3(0f, 5.4f, 0f), 0.32f, 0.55f, palette.Bronze);
+        }
+
+        private static void CreateChyasinDewalTemple(Transform parent, Vector3 center, PatanMaterialPalette palette)
+        {
+            GameObject temple = CreateRoot("ChyasinDewal", parent);
+            temple.transform.localPosition = center;
+            Mesh frustumMesh = GetFrustumMesh();
+
+            CreateOctagonalLayer("PlinthStage1", temple.transform, 0.4f, 10.2f, 0.8f, palette.LightStone, true);
+            CreateOctagonalLayer("PlinthStage2", temple.transform, 1.1f, 8.6f, 0.65f, palette.LightStone, true);
+            CreateOctagonalLayer("PlinthStage3", temple.transform, 1.65f, 7.2f, 0.5f, palette.LightStone, true);
+            CreateCube("EastSteps", temple.transform, new Vector3(4.9f, 0.65f, 0f), new Vector3(1.8f, 1.1f, 2.4f), palette.LightStone);
+
+            CreateOctagonalLayer("ArcadeGallery", temple.transform, 3.35f, 5.8f, 2.9f, palette.LightStone, true);
+            CreateOctagonalLayer("GalleryCornice", temple.transform, 4.95f, 6.5f, 0.35f, palette.LightStone, false);
+            CreateOctagonalLayer("UpperChamber", temple.transform, 6.35f, 4.5f, 2.5f, palette.LightStone, true);
+            CreateOctagonalLayer("UpperCornice", temple.transform, 7.75f, 5.2f, 0.32f, palette.LightStone, false);
+
+            for (int index = 0; index < 8; index++)
+            {
+                float angleRadians = index * Mathf.PI * 0.25f;
+                Vector3 turretPos = new Vector3(Mathf.Cos(angleRadians) * 2.5f, 5.85f, Mathf.Sin(angleRadians) * 2.5f);
+                CreateCylinder($"ChhatriTurret{index + 1}", temple.transform, turretPos, 0.38f, 1.4f, palette.LightStone);
+                CreateCylinder($"ChhatriFinial{index + 1}", temple.transform, turretPos + new Vector3(0f, 0.9f, 0f), 0.1f, 0.45f, palette.Bronze);
+            }
+
+            CreateFrustum("ShikharaTower", temple.transform, frustumMesh, new Vector3(0f, 7.91f, 0f), new Vector3(3.9f, 5.4f, 3.9f), palette.LightStone);
+            CreateCylinder("AmalakaRing", temple.transform, new Vector3(0f, 13.5f, 0f), 0.7f, 0.36f, palette.LightStone);
+            CreateCylinder("GoldenGajur", temple.transform, new Vector3(0f, 14.2f, 0f), 0.18f, 1.1f, palette.Bronze);
+        }
+
+        private static void CreateOctagonalLayer(
+            string baseName,
+            Transform parent,
+            float centerY,
+            float width,
+            float height,
+            Material material,
+            bool withCollider)
+        {
+            Vector3 scale = new Vector3(width, height, width);
+            if (withCollider)
+            {
+                CreateRotatedCube($"{baseName}_A", parent, new Vector3(0f, centerY, 0f), scale, Quaternion.identity, material);
+                CreateRotatedCube($"{baseName}_B", parent, new Vector3(0f, centerY, 0f), scale, Quaternion.Euler(0f, 45f, 0f), material);
+            }
+            else
+            {
+                CreateVisualRotatedCube($"{baseName}_A", parent, new Vector3(0f, centerY, 0f), scale, Quaternion.identity, material);
+                CreateVisualRotatedCube($"{baseName}_B", parent, new Vector3(0f, centerY, 0f), scale, Quaternion.Euler(0f, 45f, 0f), material);
+            }
+        }
+
+        private static void CreatePalaceComplex(Transform parent, PatanMaterialPalette palette)
+        {
+            Mesh frustumMesh = GetFrustumMesh();
+
+            GameObject bahadurWing = CreateRoot("BahadurShahWing", parent);
+            CreateCourtyardBlock(
+                bahadurWing.transform,
+                new Vector3(36f, 0f, 41.5f),
+                22f,
+                13f,
+                8.8f,
+                3.0f,
+                4.8f,
+                palette.Brick,
+                palette.Timber,
+                palette.TerracottaRoof);
+
+            GameObject keshavChowk = CreateRoot("KeshavNarayanChowk", parent);
+            CreateCourtyardBlock(
+                keshavChowk.transform,
+                new Vector3(36.5f, 0f, 22f),
+                24f,
+                24f,
+                9.6f,
+                3.4f,
+                5.4f,
+                palette.Brick,
+                palette.Timber,
+                palette.TerracottaRoof);
+            CreateVisualCube("KeshavPaving", keshavChowk.transform, new Vector3(36.5f, 0.046f, 22f), new Vector3(17f, 0.092f, 17f), palette.LightStone);
+            CreateCube("GoldenGateFrame", keshavChowk.transform, new Vector3(24.3f, 2.6f, 22f), new Vector3(0.35f, 4.8f, 6.2f), palette.Bronze);
+            CreateCube("NorthGuardianLion", keshavChowk.transform, new Vector3(23.3f, 0.95f, 25.4f), new Vector3(1.3f, 1.7f, 0.95f), palette.LightStone);
+            CreateCube("SouthGuardianLion", keshavChowk.transform, new Vector3(23.3f, 0.95f, 18.6f), new Vector3(1.3f, 1.7f, 0.95f), palette.LightStone);
+            CreateTwoTierPagoda("KeshavNarayanTemple", keshavChowk.transform, new Vector3(36.5f, 0f, 22f), 10.5f, 5.0f, palette.Brick, palette.Timber, palette.TerracottaRoof, palette.Bronze);
+
+            GameObject degutale = CreateRoot("DegutaleTemple", parent);
+            degutale.transform.localPosition = new Vector3(29.5f, 0f, 7.5f);
+            CreateCube("PalaceBaseMass", degutale.transform, new Vector3(0f, 4.8f, 0f), new Vector3(11.5f, 9.6f, 11.5f), palette.DarkBrick);
+            CreateCube("TowerTier1Body", degutale.transform, new Vector3(0f, 11.2f, 0f), new Vector3(8.8f, 3.2f, 8.8f), palette.Brick);
+            CreateCube("TowerTier1Roof", degutale.transform, new Vector3(0f, 12.95f, 0f), new Vector3(11.4f, 0.36f, 11.4f), palette.TerracottaRoof);
+            CreateCube("TowerTier2Body", degutale.transform, new Vector3(0f, 14.45f, 0f), new Vector3(6.8f, 2.6f, 6.8f), palette.DarkBrick);
+            CreateCube("TowerTier2Roof", degutale.transform, new Vector3(0f, 15.9f, 0f), new Vector3(9.2f, 0.34f, 9.2f), palette.TerracottaRoof);
+            CreateCube("TowerTier3Body", degutale.transform, new Vector3(0f, 17.1f, 0f), new Vector3(4.8f, 2.1f, 4.8f), palette.Brick);
+            CreateCube("TowerTier3Roof", degutale.transform, new Vector3(0f, 18.3f, 0f), new Vector3(7.0f, 0.32f, 7.0f), palette.Bronze);
+            CreateFrustum("DegutaleCap", degutale.transform, frustumMesh, new Vector3(0f, 18.46f, 0f), new Vector3(4.6f, 2.4f, 4.6f), palette.Bronze);
+            CreateCylinder("DegutaleGajur", degutale.transform, new Vector3(0f, 21.3f, 0f), 0.22f, 1.1f, palette.Bronze);
+
+            GameObject mulChowk = CreateRoot("MulChowk", parent);
+            CreateCourtyardBlock(
+                mulChowk.transform,
+                new Vector3(37f, 0f, -6f),
+                25f,
+                26f,
+                9.2f,
+                3.4f,
+                5.6f,
+                palette.Brick,
+                palette.Timber,
+                palette.TerracottaRoof);
+            CreateVisualCube("MulChowkPaving", mulChowk.transform, new Vector3(37f, 0.046f, -6f), new Vector3(18f, 0.092f, 19f), palette.Paving);
+            CreateCube("YantajuShrinePlinth", mulChowk.transform, new Vector3(37f, 0.45f, -6f), new Vector3(2.6f, 0.9f, 2.6f), palette.LightStone);
+            CreateCube("YantajuShrineBody", mulChowk.transform, new Vector3(37f, 1.75f, -6f), new Vector3(1.7f, 1.7f, 1.7f), palette.Bronze);
+            CreateFrustum("YantajuShrineRoof", mulChowk.transform, frustumMesh, new Vector3(37f, 2.6f, -6f), new Vector3(2.3f, 1.2f, 2.3f), palette.Bronze);
+            CreateCube("GoldenDoorTorana", mulChowk.transform, new Vector3(37f, 2.6f, -17.1f), new Vector3(3.8f, 4.4f, 0.35f), palette.Bronze);
+
+            GameObject talejuSouth = CreateRoot("SouthTalejuTemple", mulChowk.transform);
+            talejuSouth.transform.localPosition = new Vector3(37f, 9.2f, -17.3f);
+            CreateCube("TalejuTier1", talejuSouth.transform, new Vector3(0f, 1.5f, 0f), new Vector3(6.4f, 3.0f, 6.4f), palette.Brick);
+            CreateCube("TalejuRoof1", talejuSouth.transform, new Vector3(0f, 3.15f, 0f), new Vector3(8.4f, 0.32f, 8.4f), palette.TerracottaRoof);
+            CreateCube("TalejuTier2", talejuSouth.transform, new Vector3(0f, 4.45f, 0f), new Vector3(4.8f, 2.3f, 4.8f), palette.DarkBrick);
+            CreateCube("TalejuRoof2", talejuSouth.transform, new Vector3(0f, 5.75f, 0f), new Vector3(6.6f, 0.3f, 6.6f), palette.TerracottaRoof);
+            CreateFrustum("TalejuCap", talejuSouth.transform, frustumMesh, new Vector3(0f, 5.9f, 0f), new Vector3(4.0f, 2.6f, 4.0f), palette.Bronze);
+            CreateCylinder("TalejuFinial", talejuSouth.transform, new Vector3(0f, 8.95f, 0f), 0.18f, 0.95f, palette.Bronze);
+
+            GameObject sundariChowk = CreateRoot("SundariChowk", parent);
+            CreateCourtyardBlock(
+                sundariChowk.transform,
+                new Vector3(37.5f, 0f, -31.5f),
+                22f,
+                21f,
+                9.4f,
+                3.2f,
+                5.0f,
+                palette.DarkBrick,
+                palette.Timber,
+                palette.TerracottaRoof);
+            CreateVisualCube("SundariPaving", sundariChowk.transform, new Vector3(37.5f, 0.046f, -31.5f), new Vector3(15f, 0.092f, 14f), palette.LightStone);
+            CreateVisualCube("TushaHitiRim", sundariChowk.transform, new Vector3(37.5f, 0.08f, -31.5f), new Vector3(5.6f, 0.16f, 5.6f), palette.LightStone);
+            CreateVisualCube("TushaHitiBasin", sundariChowk.transform, new Vector3(37.5f, 0.095f, -31.5f), new Vector3(4.2f, 0.04f, 4.2f), palette.WaterBasin);
+            CreateCube("HanumanStatue", sundariChowk.transform, new Vector3(25.6f, 1.15f, -28.2f), new Vector3(1.1f, 2.1f, 1.1f), palette.LightStone);
+            CreateCube("NarasimhaStatue", sundariChowk.transform, new Vector3(25.6f, 1.15f, -34.8f), new Vector3(1.1f, 2.1f, 1.1f), palette.LightStone);
 
             for (int level = 0; level < 2; level++)
             {
-                float height = level == 0 ? 2.8f : 6f;
-                for (int index = -4; index <= 4; index++)
+                float windowY = level == 0 ? 3.2f : 6.4f;
+                for (int index = -8; index <= 9; index++)
                 {
-                    if (level == 0 && index == 0)
+                    float z = index * 4.6f;
+                    if (Mathf.Abs(z - 22f) < 3.4f || Mathf.Abs(z + 6f) < 3.4f || Mathf.Abs(z + 31.5f) < 3.2f)
                     {
                         continue;
                     }
 
-                    float z = index * 5.25f;
-                    CreateCube($"Window{level + 1}_{index + 5}", parent, new Vector3(23.91f, height, z), new Vector3(0.24f, 1.55f, 2.1f), timberMaterial);
-                    CreateCube($"WindowLintel{level + 1}_{index + 5}", parent, new Vector3(23.75f, height + 0.92f, z), new Vector3(0.55f, 0.18f, 2.5f), timberMaterial);
+                    float x = z < -19f ? 26.35f : 24.35f;
+                    CreateCube($"PalaceWindow{level + 1}_{index + 9}", parent, new Vector3(x, windowY, z), new Vector3(0.28f, 1.55f, 2.0f), palette.Timber);
+                    CreateCube($"PalaceLintel{level + 1}_{index + 9}", parent, new Vector3(x - 0.14f, windowY + 0.92f, z), new Vector3(0.55f, 0.18f, 2.4f), palette.Timber);
                 }
             }
+
+            CreateBhandarkhalGarden(parent, palette);
         }
 
-        private static void CreateNewariFacades(Transform parent, Transform boundaryParent, Material brickMaterial, Material darkBrickMaterial, Material timberMaterial)
+        private static void CreateCourtyardBlock(
+            Transform parent,
+            Vector3 center,
+            float sizeX,
+            float sizeZ,
+            float height,
+            float wingThickness,
+            float gateWidth,
+            Material wallMaterial,
+            Material timberMaterial,
+            Material roofMaterial)
         {
-            float[] heights = { 7.5f, 9f, 8f, 10f, 7f, 9.5f };
-            for (int index = 0; index < heights.Length; index++)
+            float halfX = sizeX * 0.5f;
+            float halfZ = sizeZ * 0.5f;
+            float halfThickness = wingThickness * 0.5f;
+            float sideSegmentLength = (sizeZ - gateWidth) * 0.5f;
+            float segmentOffsetZ = (gateWidth + sideSegmentLength) * 0.5f;
+
+            CreateCube("NorthWing", parent, center + new Vector3(0f, height * 0.5f, halfZ - halfThickness), new Vector3(sizeX, height, wingThickness), wallMaterial);
+            CreateCube("SouthWing", parent, center + new Vector3(0f, height * 0.5f, -halfZ + halfThickness), new Vector3(sizeX, height, wingThickness), wallMaterial);
+            CreateCube("WestWingNorth", parent, center + new Vector3(-halfX + halfThickness, height * 0.5f, segmentOffsetZ), new Vector3(wingThickness, height, sideSegmentLength), wallMaterial);
+            CreateCube("WestWingSouth", parent, center + new Vector3(-halfX + halfThickness, height * 0.5f, -segmentOffsetZ), new Vector3(wingThickness, height, sideSegmentLength), wallMaterial);
+            CreateCube("WestGateUpperHeader", parent, center + new Vector3(-halfX + halfThickness, height - 1.4f, 0f), new Vector3(wingThickness, 2.8f, gateWidth), wallMaterial);
+            CreateCube("EastWingNorth", parent, center + new Vector3(halfX - halfThickness, height * 0.5f, segmentOffsetZ), new Vector3(wingThickness, height, sideSegmentLength), wallMaterial);
+            CreateCube("EastWingSouth", parent, center + new Vector3(halfX - halfThickness, height * 0.5f, -segmentOffsetZ), new Vector3(wingThickness, height, sideSegmentLength), wallMaterial);
+            CreateCube("EastGateUpperHeader", parent, center + new Vector3(halfX - halfThickness, height - 1.4f, 0f), new Vector3(wingThickness, 2.8f, gateWidth), wallMaterial);
+
+            CreateCube("NorthRoof", parent, center + new Vector3(0f, height + 0.2f, halfZ - halfThickness), new Vector3(sizeX + 0.8f, 0.4f, wingThickness + 0.8f), roofMaterial);
+            CreateCube("SouthRoof", parent, center + new Vector3(0f, height + 0.2f, -halfZ + halfThickness), new Vector3(sizeX + 0.8f, 0.4f, wingThickness + 0.8f), roofMaterial);
+            CreateCube("WestRoof", parent, center + new Vector3(-halfX + halfThickness, height + 0.2f, 0f), new Vector3(wingThickness + 0.8f, 0.4f, sizeZ + 0.8f), roofMaterial);
+            CreateCube("EastRoof", parent, center + new Vector3(halfX - halfThickness, height + 0.2f, 0f), new Vector3(wingThickness + 0.8f, 0.4f, sizeZ + 0.8f), roofMaterial);
+            CreateCube("WestEaveTrim", parent, center + new Vector3(-halfX - 0.35f, height - 0.1f, 0f), new Vector3(0.5f, 0.35f, sizeZ + 0.6f), timberMaterial);
+        }
+
+        private static void CreateBhandarkhalGarden(Transform parent, PatanMaterialPalette palette)
+        {
+            GameObject garden = CreateRoot("BhandarkhalGarden", parent);
+            CreateVisualCube("GardenLawnNorth", garden.transform, new Vector3(63.5f, 0.045f, 22f), new Vector3(11f, 0.09f, 44f), palette.GardenGrass);
+            CreateVisualCube("GardenLawnSouth", garden.transform, new Vector3(63.5f, 0.045f, -24f), new Vector3(11f, 0.09f, 40f), palette.GardenGrass);
+            CreateVisualCube("KamalPokhariStoneRim", garden.transform, new Vector3(63.5f, 0.055f, 2f), new Vector3(10.5f, 0.11f, 18f), palette.LightStone);
+            CreateVisualCube("KamalPokhariWater", garden.transform, new Vector3(63.5f, 0.065f, 2f), new Vector3(8.8f, 0.12f, 16.2f), palette.WaterBasin);
+            CreateOpenPati("BhandarkhalPavilion", garden.transform, new Vector3(63.5f, 0f, 15.5f), new Vector3(5.6f, 3.8f, 4.2f), palette);
+        }
+
+        private static void CreateNewariNeighborhoods(Transform parent, Transform boundaryParent, PatanMaterialPalette palette)
+        {
+            float[] westInnerZ = { -84f, -34f, -4f, 26f, 76f };
+            float[] westInnerHeights = { 8.5f, 9.2f, 8.0f, 9.8f, 8.6f };
+            for (int index = 0; index < westInnerZ.Length; index++)
             {
-                float z = -50f + index * 20f;
-                Material material = index % 2 == 0 ? brickMaterial : darkBrickMaterial;
-                CreateCube($"WestFacade{index + 1}", parent, new Vector3(-43.2f, heights[index] * 0.5f, z), new Vector3(2.8f, heights[index], 19f), material);
-                CreateCube($"WestEave{index + 1}", parent, new Vector3(-41.65f, heights[index] - 0.4f, z), new Vector3(0.4f, 0.3f, 19.2f), timberMaterial);
+                Material wallMat = index % 2 == 0 ? palette.Brick : palette.DarkBrick;
+                CreateNewariHouseBlock(
+                    $"MangalBazarWestBlock{index + 1}",
+                    parent,
+                    new Vector3(-46.5f, 0f, westInnerZ[index]),
+                    new Vector3(6.8f, westInnerHeights[index], 16f),
+                    wallMat,
+                    palette.Timber,
+                    palette.TerracottaRoof,
+                    palette.WhitePlaster,
+                    index % 3 == 1);
             }
 
-            for (int index = 0; index < 4; index++)
+            float[] westOuterZ = { -84f, -28f, 24f, 76f };
+            for (int index = 0; index < westOuterZ.Length; index++)
             {
-                float x = -33f + index * 22f;
-                float height = 7f + index % 2 * 1.5f;
-                CreateCube($"NorthFacade{index + 1}", parent, new Vector3(x, height * 0.5f, 58.1f), new Vector3(21f, height, 3.2f), index % 2 == 0 ? darkBrickMaterial : brickMaterial);
-                CreateCube($"SouthFacade{index + 1}", parent, new Vector3(x, height * 0.5f, -58.1f), new Vector3(21f, height, 3.2f), index % 2 == 0 ? brickMaterial : darkBrickMaterial);
+                Material wallMat = index % 2 == 0 ? palette.DarkBrick : palette.Brick;
+                CreateNewariHouseBlock(
+                    $"HaugalTownhouse{index + 1}",
+                    parent,
+                    new Vector3(-63.5f, 0f, westOuterZ[index]),
+                    new Vector3(7.4f, 8.2f + (index % 2) * 1.4f, 18f),
+                    wallMat,
+                    palette.Timber,
+                    palette.TerracottaRoof,
+                    palette.WhitePlaster,
+                    index % 2 == 0);
             }
 
-            CreateCube("NorthBoundary", boundaryParent, new Vector3(0f, 3f, 59.5f), new Vector3(90f, 6f, 1f), darkBrickMaterial);
-            CreateCube("SouthBoundary", boundaryParent, new Vector3(0f, 3f, -59.5f), new Vector3(90f, 6f, 1f), darkBrickMaterial);
-            CreateCube("EastBoundary", boundaryParent, new Vector3(44.5f, 3f, 0f), new Vector3(1f, 6f, 120f), darkBrickMaterial);
-            CreateCube("WestBoundary", boundaryParent, new Vector3(-44.5f, 3f, 0f), new Vector3(1f, 6f, 120f), darkBrickMaterial);
+            float[] northQuarterX = { -26f, 0f, 28f, 62f };
+            for (int index = 0; index < northQuarterX.Length; index++)
+            {
+                Material wallMat = index % 2 == 0 ? palette.Brick : palette.DarkBrick;
+                CreateNewariHouseBlock(
+                    $"SwothaNorthBlock{index + 1}",
+                    parent,
+                    new Vector3(northQuarterX[index], 0f, 89f),
+                    new Vector3(16f, 8.4f + (index % 2) * 1.2f, 6.8f),
+                    wallMat,
+                    palette.Timber,
+                    palette.TerracottaRoof,
+                    palette.WhitePlaster,
+                    index == 1);
+            }
+
+            float[] southQuarterX = { -26f, 2f, 30f, 62f };
+            for (int index = 0; index < southQuarterX.Length; index++)
+            {
+                Material wallMat = index % 2 == 0 ? palette.DarkBrick : palette.Brick;
+                CreateNewariHouseBlock(
+                    $"LagankhelSouthBlock{index + 1}",
+                    parent,
+                    new Vector3(southQuarterX[index], 0f, -86f),
+                    new Vector3(16f, 8.0f + (index % 2) * 1.5f, 6.8f),
+                    wallMat,
+                    palette.Timber,
+                    palette.TerracottaRoof,
+                    palette.WhitePlaster,
+                    index == 2);
+            }
+
+            for (int index = 0; index < 8; index++)
+            {
+                float z = -98f + index * 28f;
+                float height = 8.0f + (index % 3) * 1.2f;
+                Material wallMat = index % 2 == 0 ? palette.Brick : palette.DarkBrick;
+                CreateCube($"WestPerimeterFacade{index + 1}", parent, new Vector3(-84.5f, height * 0.5f, z), new Vector3(4.2f, height, 23f), wallMat);
+                CreateCube($"WestPerimeterEave{index + 1}", parent, new Vector3(-82.1f, height - 0.35f, z), new Vector3(0.55f, 0.35f, 23.4f), palette.Timber);
+                CreateCube($"EastPerimeterFacade{index + 1}", parent, new Vector3(84.5f, height * 0.5f, z), new Vector3(4.2f, height, 23f), index % 2 == 0 ? palette.DarkBrick : palette.Brick);
+                CreateCube($"EastPerimeterEave{index + 1}", parent, new Vector3(82.1f, height - 0.35f, z), new Vector3(0.55f, 0.35f, 23.4f), palette.Timber);
+            }
+
+            for (int index = 0; index < 6; index++)
+            {
+                float x = -68f + index * 27.2f;
+                float height = 7.8f + (index % 2) * 1.5f;
+                CreateCube($"NorthPerimeterFacade{index + 1}", parent, new Vector3(x, height * 0.5f, 113.5f), new Vector3(23f, height, 4.2f), index % 2 == 0 ? palette.DarkBrick : palette.Brick);
+                CreateCube($"SouthPerimeterFacade{index + 1}", parent, new Vector3(x, height * 0.5f, -113.5f), new Vector3(23f, height, 4.2f), index % 2 == 0 ? palette.Brick : palette.DarkBrick);
+            }
+
+            CreateCube("NorthBoundary", boundaryParent, new Vector3(0f, 3.5f, 119.5f), new Vector3(PLAYABLE_WIDTH, 7f, 1f), palette.DarkBrick);
+            CreateCube("SouthBoundary", boundaryParent, new Vector3(0f, 3.5f, -119.5f), new Vector3(PLAYABLE_WIDTH, 7f, 1f), palette.DarkBrick);
+            CreateCube("EastBoundary", boundaryParent, new Vector3(89.5f, 3.5f, 0f), new Vector3(1f, 7f, PLAYABLE_LENGTH), palette.DarkBrick);
+            CreateCube("WestBoundary", boundaryParent, new Vector3(-89.5f, 3.5f, 0f), new Vector3(1f, 7f, PLAYABLE_LENGTH), palette.DarkBrick);
+        }
+
+        private static void CreateNewariHouseBlock(
+            string name,
+            Transform parent,
+            Vector3 baseCenter,
+            Vector3 size,
+            Material brickMaterial,
+            Material timberMaterial,
+            Material roofMaterial,
+            Material plasterMaterial,
+            bool hasWhiteUpperStory)
+        {
+            GameObject house = CreateRoot(name, parent);
+            house.transform.localPosition = baseCenter;
+            float lowerHeight = size.y * 0.62f;
+            float upperHeight = size.y - lowerHeight;
+
+            CreateCube("Plinth", house.transform, new Vector3(0f, 0.25f, 0f), new Vector3(size.x + 0.4f, 0.5f, size.z + 0.4f), timberMaterial);
+            CreateCube("LowerFacade", house.transform, new Vector3(0f, lowerHeight * 0.5f, 0f), new Vector3(size.x, lowerHeight, size.z), brickMaterial);
+            CreateCube("UpperFacade", house.transform, new Vector3(0f, lowerHeight + upperHeight * 0.5f, 0f), new Vector3(size.x * 0.98f, upperHeight, size.z * 0.98f), hasWhiteUpperStory ? plasterMaterial : brickMaterial);
+            CreateCube("TimberCornice", house.transform, new Vector3(0f, lowerHeight, 0f), new Vector3(size.x + 0.35f, 0.26f, size.z + 0.35f), timberMaterial);
+            CreateCube("SanjhyaWindowBand", house.transform, new Vector3(0f, lowerHeight + upperHeight * 0.45f, 0f), new Vector3(size.x + 0.22f, 1.25f, size.z * 0.72f), timberMaterial);
+            CreateCube("RoofDeck", house.transform, new Vector3(0f, size.y + 0.2f, 0f), new Vector3(size.x + 1.1f, 0.4f, size.z + 1.1f), roofMaterial);
+        }
+
+        private static void CreateSquareMonumentsAndHitis(Transform parent, PatanMaterialPalette palette)
+        {
+            CreateGarudaMarker(parent, palette.LightStone, palette.Bronze, 13f);
+            CreateKingColumn("YoganarendraPillar", parent, new Vector3(11f, 0f, -11f), 7.4f, palette);
+            CreateKingColumn("BhimsenLionPillar", parent, new Vector3(-7.2f, 0f, 36f), 6.2f, palette);
+
+            CreateOpenPati("ManimandapNorth", parent, new Vector3(15f, 0f, 25.5f), new Vector3(5.2f, 4.1f, 6.2f), palette);
+            CreateOpenPati("ManimandapSouth", parent, new Vector3(15f, 0f, 16.5f), new Vector3(5.2f, 4.1f, 6.2f), palette);
+            CreateMangaHitiBasin(parent, new Vector3(18.5f, 0f, 36f), palette);
+            CreateBuddhistChaitya("ManiChaitya", parent, new Vector3(10.5f, 0f, 21f), 1.6f, palette);
+
+            CreateOpenPati("KotPati", parent, new Vector3(16.5f, 0f, -36f), new Vector3(5.4f, 4.2f, 9.2f), palette);
+            CreateMangaHitiBasin(parent, new Vector3(16.5f, 0f, -66f), palette, "MaharaniHiti");
+            CreateBuddhistChaitya("HaugalBahalChaitya", parent, new Vector3(-55f, 0f, -16f), 2.4f, palette);
+            CreateBuddhistChaitya("SwothaChaitya", parent, new Vector3(0f, 0f, 70f), 2.0f, palette);
         }
 
         private static void CreateGarudaMarker(Transform parent, Material stoneMaterial, Material bronzeMaterial, float positionX)
@@ -908,6 +1383,63 @@ namespace PatanExplorer.Editor
             marker.transform.localPosition = new Vector3(positionX, 6.8f, 0f);
             marker.transform.localScale = new Vector3(0.85f, 1.2f, 0.85f);
             marker.GetComponent<Renderer>().sharedMaterial = bronzeMaterial;
+        }
+
+        private static void CreateKingColumn(string name, Transform parent, Vector3 center, float columnHeight, PatanMaterialPalette palette)
+        {
+            GameObject column = CreateRoot(name, parent);
+            column.transform.localPosition = center;
+            CreateCube("Plinth", column.transform, new Vector3(0f, 0.45f, 0f), new Vector3(2.1f, 0.9f, 2.1f), palette.LightStone);
+            CreateCylinder("Shaft", column.transform, new Vector3(0f, 0.9f + columnHeight * 0.5f, 0f), 0.34f, columnHeight, palette.LightStone);
+            CreateCube("LotusCapital", column.transform, new Vector3(0f, 0.9f + columnHeight + 0.25f, 0f), new Vector3(1.15f, 0.45f, 1.15f), palette.LightStone);
+            CreateCylinder("BronzeStatue", column.transform, new Vector3(0f, 0.9f + columnHeight + 0.95f, 0f), 0.36f, 0.95f, palette.Bronze);
+        }
+
+        private static void CreateOpenPati(string name, Transform parent, Vector3 center, Vector3 size, PatanMaterialPalette palette)
+        {
+            GameObject pati = CreateRoot(name, parent);
+            pati.transform.localPosition = center;
+            CreateCube("Plinth", pati.transform, new Vector3(0f, 0.35f, 0f), new Vector3(size.x, 0.7f, size.z), palette.LightStone);
+
+            float postX = size.x * 0.4f;
+            float postZ = size.z * 0.4f;
+            float postHeight = size.y - 1.1f;
+            float postCenterY = 0.7f + postHeight * 0.5f;
+            CreateCube("PostNW", pati.transform, new Vector3(-postX, postCenterY, postZ), new Vector3(0.32f, postHeight, 0.32f), palette.Timber);
+            CreateCube("PostNE", pati.transform, new Vector3(postX, postCenterY, postZ), new Vector3(0.32f, postHeight, 0.32f), palette.Timber);
+            CreateCube("PostSW", pati.transform, new Vector3(-postX, postCenterY, -postZ), new Vector3(0.32f, postHeight, 0.32f), palette.Timber);
+            CreateCube("PostSE", pati.transform, new Vector3(postX, postCenterY, -postZ), new Vector3(0.32f, postHeight, 0.32f), palette.Timber);
+            CreateCube("RoofEave", pati.transform, new Vector3(0f, size.y - 0.25f, 0f), new Vector3(size.x + 1.0f, 0.35f, size.z + 1.0f), palette.TerracottaRoof);
+            CreateFrustum("RoofCap", pati.transform, GetFrustumMesh(), new Vector3(0f, size.y - 0.08f, 0f), new Vector3(size.x * 0.85f, 1.35f, size.z * 0.85f), palette.TerracottaRoof);
+        }
+
+        private static void CreateMangaHitiBasin(Transform parent, Vector3 center, PatanMaterialPalette palette, string customName = "MangaHiti")
+        {
+            GameObject hiti = CreateRoot(customName, parent);
+            hiti.transform.localPosition = center;
+            CreateVisualCube("OuterStoneRim", hiti.transform, new Vector3(0f, 0.08f, 0f), new Vector3(8.4f, 0.16f, 10.4f), palette.LightStone);
+            CreateVisualCube("InnerStepRim", hiti.transform, new Vector3(0f, 0.09f, 0f), new Vector3(6.6f, 0.18f, 8.6f), palette.Brick);
+            CreateVisualCube("WaterPool", hiti.transform, new Vector3(0f, 0.105f, 0f), new Vector3(4.8f, 0.04f, 6.8f), palette.WaterBasin);
+            CreateCube("EastSpoutWall", hiti.transform, new Vector3(3.6f, 0.65f, 0f), new Vector3(0.8f, 1.15f, 5.2f), palette.LightStone);
+            CreateCube("CenterMakaraSpout", hiti.transform, new Vector3(2.95f, 0.55f, 0f), new Vector3(0.65f, 0.28f, 0.35f), palette.Bronze);
+            CreateCube("NorthMakaraSpout", hiti.transform, new Vector3(2.95f, 0.55f, 1.4f), new Vector3(0.65f, 0.28f, 0.35f), palette.Bronze);
+            CreateCube("SouthMakaraSpout", hiti.transform, new Vector3(2.95f, 0.55f, -1.4f), new Vector3(0.65f, 0.28f, 0.35f), palette.Bronze);
+        }
+
+        private static void CreateBuddhistChaitya(string name, Transform parent, Vector3 center, float radius, PatanMaterialPalette palette)
+        {
+            GameObject chaitya = CreateRoot(name, parent);
+            chaitya.transform.localPosition = center;
+            CreateCube("BasePlinth1", chaitya.transform, new Vector3(0f, 0.3f, 0f), new Vector3(radius * 2.6f, 0.6f, radius * 2.6f), palette.LightStone);
+            CreateCube("BasePlinth2", chaitya.transform, new Vector3(0f, 0.75f, 0f), new Vector3(radius * 2.1f, 0.4f, radius * 2.1f), palette.LightStone);
+            GameObject dome = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            dome.name = "GarbhaDome";
+            dome.transform.SetParent(chaitya.transform, false);
+            dome.transform.localPosition = new Vector3(0f, 0.95f, 0f);
+            dome.transform.localScale = new Vector3(radius * 1.8f, radius * 1.6f, radius * 1.8f);
+            dome.GetComponent<Renderer>().sharedMaterial = palette.WhitePlaster;
+            CreateCube("Harmika", chaitya.transform, new Vector3(0f, 0.95f + radius * 0.95f, 0f), new Vector3(radius * 0.7f, radius * 0.45f, radius * 0.7f), palette.Bronze);
+            CreateFrustum("ThirteenRingsSpire", chaitya.transform, GetFrustumMesh(), new Vector3(0f, 0.95f + radius * 1.15f, 0f), new Vector3(radius * 0.6f, radius * 1.2f, radius * 0.6f), palette.Bronze);
         }
 
         private static void CreateLighting(Transform parent)
@@ -932,7 +1464,7 @@ namespace PatanExplorer.Editor
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.ExponentialSquared;
             RenderSettings.fogColor = new Color(0.62f, 0.58f, 0.5f);
-            RenderSettings.fogDensity = 0.005f;
+            RenderSettings.fogDensity = 0.0028f;
         }
 
         private static HudReferences CreateHud(Transform parent)
@@ -1027,7 +1559,7 @@ namespace PatanExplorer.Editor
             Camera camera = cameraObject.GetComponent<Camera>();
             camera.fieldOfView = 72f;
             camera.nearClipPlane = 0.05f;
-            camera.farClipPlane = 180f;
+            camera.farClipPlane = 380f;
             camera.clearFlags = CameraClearFlags.Skybox;
             UniversalAdditionalCameraData cameraData = cameraObject.AddComponent<UniversalAdditionalCameraData>();
             cameraData.antialiasing = AntialiasingMode.FastApproximateAntialiasing;
@@ -1085,6 +1617,20 @@ namespace PatanExplorer.Editor
         {
             GameObject cube = CreateCube(name, parent, position, scale, material);
             UnityEngine.Object.DestroyImmediate(cube.GetComponent<Collider>());
+            return cube;
+        }
+
+        private static GameObject CreateRotatedCube(string name, Transform parent, Vector3 position, Vector3 scale, Quaternion rotation, Material material)
+        {
+            GameObject cube = CreateCube(name, parent, position, scale, material);
+            cube.transform.localRotation = rotation;
+            return cube;
+        }
+
+        private static GameObject CreateVisualRotatedCube(string name, Transform parent, Vector3 position, Vector3 scale, Quaternion rotation, Material material)
+        {
+            GameObject cube = CreateVisualCube(name, parent, position, scale, material);
+            cube.transform.localRotation = rotation;
             return cube;
         }
 
