@@ -2,21 +2,22 @@
 
 ## Playable boundary
 
-- 120 m north-south by 90 m east-west around Krishna Mandir
-- One rectangular perimeter road loop around the plaza and temple group
-- Approximately 150 m by 120 m visual shell to hide scene boundaries
+- 240 m north-south by 180 m east-west around Krishna Mandir and the broader Patan Durbar Square heritage zone
+- Connected perimeter road loop and cross-avenues with flush, barrier-free ground transitions so the Ferrari can travel anywhere across roads, brick plazas, courtyards, and neighborhood streets
+- Outer perimeter Newari facades and visual boundary shell enclosing the 240 m by 180 m playable zone
 - One first-person player, one enterable car with a third-person driving camera, and one Unity scene
 
 ## Included
 
-- Original artist-authored Krishna Mandir exterior and provisional major site layout
-- Simplified Vishwanath Temple and Char Narayan Temple exteriors
-- Garuda column and statue ensemble
-- Simplified palace frontage
-- Eight to ten Newari facade shells
-- Brick plaza, stone bands, steps, two short paths, a perimeter road, and a small static prop set
+- Original artist-authored Krishna Mandir exterior and expanded Patan Durbar Square monument layout
+- Western and central temple line: Bhimsen Mandir (with golden window bay and lion pillar), Vishwanath Temple (with guardian elephants and Nandi bull), Char Narayan Temple, Narayan Temple, Narsimha Shikhara Temple, Hari Shankar Temple, Taleju Bell monument, Chyasin Dewal (octagonal stone Krishna temple), Bhai Dega Temple, Swotha Narayan Temple, and Radha Krishna Temple
+- Garuda column and King Yoganarendra Malla statue pillar
+- Royal Palace complex with Bahadur Shah Wing, Keshav Narayan Chowk (Patan Museum and central temple), Degutale Temple tower, Mul Chowk (with Yantaju Shrine and South Taleju Temple), Sundari Chowk (with sunken Tusha Hiti bath and guardian statues), and Bhandarkhal Royal Garden with Kamal Pokhari pond
+- Manga Hiti and Maharani Hiti sunken water spouts, Manimandap North & South pavilions, Kot Pati, and Buddhist chaityas (Mani Chaitya, Haugal Bahal Chaitya, Swotha Chaitya)
+- Multi-block Newari townhouse neighborhoods across Mangal Bazar, Haugal, Swotha, and Lagankhel approaches
+- Brick plaza, stone bands, perimeter road loop, cross-avenues, and unrestricted free-roam vehicle surface
 - WASD movement, mouse look, run, jump, collision, fixed lighting, shadows, haze, and browser loading UI
-- Enter/exit vehicle interaction, lightweight arcade driving, third-person orbit camera, and original synthesized placeholder vehicle audio
+- Enter/exit vehicle interaction, lightweight arcade driving anywhere in the world, third-person orbit camera, and original synthesized placeholder vehicle audio
 
 ## Excluded
 

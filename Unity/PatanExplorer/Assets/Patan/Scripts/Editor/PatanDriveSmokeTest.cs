@@ -156,7 +156,17 @@ namespace PatanExplorer.Editor
                 errors.Add($"Reversing for two seconds moved the Ferrari {reverseDistance:F1} m along its nose direction; expected at least 3 m backwards.");
             }
 
-            Debug.Log($"Drive smoke test measurements: axle offset {frontAxle - rearAxle:F2} m, rest drift {restDrift:F3} m, throttle {throttleSpeed:F1} m/s over {throttleDistance:F1} m, right yaw {rightYaw:F1} deg, left yaw {leftYaw:F1} deg, brake speed {brakeSpeed:F2} m/s over {brakeDistance:F1} m, reverse {reverseDistance:F1} m.");
+            Vector3 freeRoamStart = spawnPosition + new Vector3(3f, 0f, 0f);
+            Reset(vehicle, body, controller, freeRoamStart, Quaternion.identity);
+            controller.SetDriveInput(1f, 0f, false);
+            Step(controller, fixedUpdate, 100);
+            float freeRoamDistance = Vector3.Dot(vehicle.position - freeRoamStart, Vector3.forward);
+            if (freeRoamDistance < 12f)
+            {
+                errors.Add($"Driving north off the road onto the Durbar Square plaza moved {freeRoamDistance:F1} m; expected unrestricted free-roam travel of at least 12 m.");
+            }
+
+            Debug.Log($"Drive smoke test measurements: axle offset {frontAxle - rearAxle:F2} m, rest drift {restDrift:F3} m, throttle {throttleSpeed:F1} m/s over {throttleDistance:F1} m, right yaw {rightYaw:F1} deg, left yaw {leftYaw:F1} deg, brake speed {brakeSpeed:F2} m/s over {brakeDistance:F1} m, reverse {reverseDistance:F1} m, plaza free-roam {freeRoamDistance:F1} m.");
 
             controller.SetOccupied(false);
             Reset(vehicle, body, controller, spawnPosition, spawnRotation);
@@ -224,6 +234,8 @@ namespace PatanExplorer.Editor
         {
             body.linearVelocity = Vector3.zero;
             body.angularVelocity = Vector3.zero;
+            body.position = position;
+            body.rotation = rotation;
             vehicle.SetPositionAndRotation(position, rotation);
             controller.SetDriveInput(0f, 0f, false);
             Physics.SyncTransforms();

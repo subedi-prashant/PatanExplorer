@@ -18,6 +18,8 @@ namespace PatanExplorer.Editor
         private const string INPUT_ACTIONS_PATH = "Assets/InputSystem_Actions.inputactions";
         private const long MAX_TRIANGLE_COUNT = 600000;
         private const long MAX_VEHICLE_TRIANGLE_COUNT = 180000;
+        private const float EXPECTED_PLAYABLE_WIDTH = 180f;
+        private const float EXPECTED_PLAYABLE_LENGTH = 240f;
 
         [Serializable]
         private sealed class ValidationReport
@@ -247,9 +249,9 @@ namespace PatanExplorer.Editor
 
             float width = ground.transform.lossyScale.x;
             float length = ground.transform.lossyScale.z;
-            if (Mathf.Abs(width - 90f) > 0.01f || Mathf.Abs(length - 120f) > 0.01f)
+            if (Mathf.Abs(width - EXPECTED_PLAYABLE_WIDTH) > 0.01f || Mathf.Abs(length - EXPECTED_PLAYABLE_LENGTH) > 0.01f)
             {
-                errors.Add($"Playable ground is {width:F2} by {length:F2} m instead of 90 by 120 m.");
+                errors.Add($"Playable ground is {width:F2} by {length:F2} m instead of {EXPECTED_PLAYABLE_WIDTH:F0} by {EXPECTED_PLAYABLE_LENGTH:F0} m.");
             }
 
             string[] roadNames = { "NorthRoad", "SouthRoad", "EastRoad", "WestRoad" };

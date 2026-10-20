@@ -56,7 +56,6 @@ Test environment: Windows 11, Intel Iris Xe Graphics, 32 GB system memory, autom
 | Missing scripts | 0 |
 | Detailed Krishna Mandir top | 19.67 m |
 | Application console errors | 0 |
-
 The detailed original Krishna Mandir remains below the compressed transfer and triangle budgets. Browser loading reached 100%, the detailed textured exterior rendered successfully, and all compressed data, JavaScript, and WebAssembly responses returned the required MIME and Brotli headers.
 
 ## Driving milestone baseline — 2026-10-08
@@ -88,3 +87,21 @@ The expanded road, vehicle, textures, audio, and vehicle code remain below the c
 Drive smoke test measurements (physics stepped at 50 Hz in the Editor): 2.47 m measured wheelbase against the F40's real 2.46 m, no drift when parked, 20.0 m/s after two seconds of throttle over 20.6 m, 38.7 degrees of yaw in 0.6 s at 8 m/s in both directions, a stop from 12 m/s in 2.9 m, and 10.2 m of travel in reverse over two seconds.
 
 Headless Chromium cannot sustain Unity pointer lock (`WrongDocumentError`), so Enter transitions, camera collision, and audible output still require the normal human browser control pass.
+
+## Expanded Patan Durbar Square & free-roam baseline — 2026-10-16
+
+Test environment: Windows 11, Unity `6000.3.23f1` WebGL Brotli release build, expanded 180 m east-west by 240 m north-south playable monument zone, and Brotli-aware local server.
+
+| Measurement | Result |
+|---|---:|
+| Total generated Web files | 15,915,442 bytes / 15.18 MiB |
+| Brotli data file | 10,664,875 bytes |
+| Brotli WebAssembly file | 5,148,378 bytes |
+| Renderers / materials / colliders | 552 / 27 / 485 |
+| Instanced scene triangles | 272,674 |
+| Optimized Ferrari triangles | 148,576 |
+| Playable area | 180 m east-west by 240 m north-south |
+| Drive smoke test (including off-road plaza free-roam) | Passed (20.6 m road and 20.6 m plaza travel in 2.0 s) |
+| Missing scripts | 0 |
+| Detailed Krishna Mandir top | 19.67 m |
+| Application console errors | 0 |
